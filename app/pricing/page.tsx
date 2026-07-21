@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "The Trial Lesson is a low-cost 30-minute introductory session rather than a free call — it lets you experience a real lesson with Tutor Yang before committing to regular sessions.",
+    a: "The Trial Lesson is a low-cost 30-minute introductory session rather than a free call — it lets you experience a real lesson with Tutor Yang before committing to regular sessions. If you would like to chat first, message Tutor Yang on WhatsApp, WeChat, or email — details on the Contact page.",
   },
 ];
 

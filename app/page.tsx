@@ -116,7 +116,7 @@ export default function Home() {
               className="px-7 py-3.5 rounded font-bold text-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#CD8136", color: "white" }}
             >
-              Book a Free Trial Lesson
+              Book a Trial Lesson
             </Link>
             <Link
               href="/chinese-lessons"
@@ -308,15 +308,15 @@ export default function Home() {
           Ready to Start Your Chinese Journey?
         </p>
         <p className="text-white/80 mb-8 max-w-lg mx-auto">
-          Book a free 20-minute trial lesson and discover the right program for
-          you.
+          Book a Trial Lesson, or message Tutor Yang first on WhatsApp, WeChat,
+          or email to find the right program for you.
         </p>
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#CD8136", color: "white" }}
         >
-          Book My Free Trial →
+          Book a Trial Lesson →
         </Link>
       </section>
     </>

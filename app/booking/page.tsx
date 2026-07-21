@@ -35,8 +35,8 @@ export default function Booking() {
             Book a Lesson
           </h1>
           <p className="text-white/75 max-w-xl mx-auto text-lg">
-            Select a time that works for you. First lesson includes a free
-            20-minute introductory chat.
+            Select a time that works for you. Not sure where to start? Message
+            Tutor Yang on WhatsApp, WeChat, or email first.
           </p>
         </div>
       </section>
@@ -77,10 +77,19 @@ export default function Booking() {
             Yang will respond within one business day.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/contact"
+            <a
+              href="https://wa.me/447422541081"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 py-3 rounded font-bold text-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#B668BD", color: "white" }}
+            >
+              WhatsApp
+            </a>
+            <Link
+              href="/contact"
+              className="px-6 py-3 rounded font-bold text-sm border-2 transition-colors hover:bg-gray-50"
+              style={{ borderColor: "#B668BD", color: "#B668BD" }}
             >
               Send a Message
             </Link>

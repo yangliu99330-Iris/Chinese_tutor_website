@@ -232,16 +232,16 @@ export default function ChineseLessons() {
           Not Sure Which Level to Start?
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
-          Book a free 20-minute assessment and Tutor Yang will recommend the
-          perfect course for your current level and goals.
+          Message Tutor Yang on WhatsApp, WeChat, or email and she&apos;ll
+          recommend the perfect course for your current level and goals.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="/booking"
+            href="/contact"
             className="px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
             style={{ backgroundColor: "#CD8136", color: "white" }}
           >
-            Book a Free Assessment
+            Get in Touch
           </Link>
           <Link
             href="/pricing"

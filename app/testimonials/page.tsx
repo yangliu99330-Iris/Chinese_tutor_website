@@ -197,7 +197,7 @@ export default function Testimonials() {
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#CD8136", color: "white" }}
         >
-          Book My Free Trial →
+          Book a Trial Lesson →
         </Link>
       </section>
     </>

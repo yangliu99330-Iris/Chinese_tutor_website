@@ -28,7 +28,7 @@ export const LESSON_TYPES: LessonType[] = [
   {
     id: "young-pupils",
     label: "Lesson for Young Pupils",
-    priceCents: 1599,
+    priceCents: 1899,
     durationMinutes: 45,
     description: "A 45-minute lesson paced and structured for younger learners.",
   },

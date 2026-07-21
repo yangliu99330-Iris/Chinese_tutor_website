@@ -5,6 +5,8 @@ import Link from "next/link";
 
 const contactDetails = [
   { icon: "✉", label: "Email", value: "chinesetutoryang@gmail.com", href: "mailto:chinesetutoryang@gmail.com" },
+  { icon: "💬", label: "WhatsApp", value: "+44 7422 541081", href: "https://wa.me/447422541081" },
+  { icon: "🇨🇳", label: "WeChat", value: "Iris-BaiLan", href: null },
   { icon: "⏰", label: "Hours", value: "Monday – Saturday: 9 AM – 7 PM", href: null },
   { icon: "💻", label: "Lessons", value: "Online (Zoom) & In-Person", href: null },
   { icon: "📍", label: "Location", value: "Local area & worldwide via Zoom", href: null },
@@ -265,7 +267,8 @@ export default function Contact() {
           Ready to Begin?
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
-          Skip the wait — book your free trial lesson directly from the calendar.
+          Skip the wait — book your trial lesson directly from the calendar,
+          or message Tutor Yang first on WhatsApp, WeChat, or email.
         </p>
         <Link
           href="/booking"

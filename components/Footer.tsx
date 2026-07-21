@@ -77,6 +77,14 @@ export default function Footer() {
                 <span>chinesetutoryang@gmail.com</span>
               </li>
               <li className="flex items-start gap-2">
+                <span style={{ color: "#CD8136" }}>💬</span>
+                <span>WhatsApp: +44 7422 541081</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span style={{ color: "#CD8136" }}>🇨🇳</span>
+                <span>WeChat: Iris-BaiLan</span>
+              </li>
+              <li className="flex items-start gap-2">
                 <span style={{ color: "#CD8136" }}>📍</span>
                 <span>Online &amp; In-Person Lessons Available</span>
               </li>

@@ -227,7 +227,7 @@ export default function About() {
           Let&apos;s Learn Together
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
-          Book a free trial lesson and experience the Tutor Yang difference for
+          Book a Trial Lesson and experience the Tutor Yang difference for
           yourself.
         </p>
         <Link
@@ -235,7 +235,7 @@ export default function About() {
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#CD8136", color: "white" }}
         >
-          Book My Free Trial →
+          Book a Trial Lesson →
         </Link>
       </section>
     </>
