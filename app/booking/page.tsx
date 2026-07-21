@@ -27,7 +27,7 @@ export default function Booking() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#CD8136" }}
+            style={{ color: "#F8ECE1" }}
           >
             Schedule Your Session
           </p>

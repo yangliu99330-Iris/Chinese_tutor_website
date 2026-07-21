@@ -99,7 +99,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-24 relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#CD8136" }}
+            style={{ color: "#F8ECE1" }}
           >
             杨老师 — Tutor Yang
           </p>
@@ -182,14 +182,14 @@ export default function Home() {
                 <div className="relative z-10 p-8 md:p-10">
                   <p
                     className="font-playfair text-5xl font-bold mb-2"
-                    style={{ color: "#CD8136" }}
+                    style={{ color: "#F8ECE1" }}
                   >
                     {p.char}
                   </p>
                   <h3 className="font-playfair text-2xl font-bold text-white mb-1">
                     {p.title}
                   </h3>
-                  <p className="text-sm mb-4" style={{ color: "#CD8136" }}>
+                  <p className="text-sm mb-4" style={{ color: "#F8ECE1" }}>
                     {p.subtitle}
                   </p>
                   <p className="text-white/80 text-sm leading-relaxed mb-6">

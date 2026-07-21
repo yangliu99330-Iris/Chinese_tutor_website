@@ -71,7 +71,7 @@ export default function ChineseDanceLessons() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#CD8136" }}
+            style={{ color: "#F8ECE1" }}
           >
             中国舞蹈课
           </p>
@@ -119,14 +119,14 @@ export default function ChineseDanceLessons() {
                   <div>
                     <span
                       className="font-playfair text-7xl font-bold block mb-3"
-                      style={{ color: "#CD8136" }}
+                      style={{ color: "#F8ECE1" }}
                     >
                       {style.char}
                     </span>
                     <h3 className="font-playfair text-xl font-bold text-white">
                       {style.title}
                     </h3>
-                    <p className="text-sm mt-1" style={{ color: "#CD8136" }}>
+                    <p className="text-sm mt-1" style={{ color: "#F8ECE1" }}>
                       {style.subtitle}
                     </p>
                   </div>
@@ -229,7 +229,7 @@ export default function ChineseDanceLessons() {
                 className="py-4 rounded-xl font-semibold text-sm"
                 style={{
                   background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
-                  color: "#CD8136",
+                  color: "white",
                 }}
               >
                 {age}

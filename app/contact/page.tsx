@@ -57,7 +57,7 @@ export default function Contact() {
           联
         </span>
         <div className="relative z-10">
-          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#CD8136" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#F8ECE1" }}>
             Get in Touch
           </p>
           <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">

@@ -42,7 +42,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <span
               className="text-3xl font-bold"
-              style={{ color: "#CD8136", fontFamily: "serif" }}
+              style={{ color: "#F8ECE1", fontFamily: "serif" }}
             >
               杨
             </span>
@@ -50,7 +50,7 @@ export default function Navbar() {
               <p className="text-white font-bold text-sm leading-tight">
                 Chinese Tutor Yang
               </p>
-              <p className="text-xs leading-tight" style={{ color: "#CD8136" }}>
+              <p className="text-xs leading-tight" style={{ color: "#F8ECE1" }}>
                 中文 &amp; 中国舞蹈
               </p>
             </div>
@@ -64,20 +64,20 @@ export default function Navbar() {
                 href={link.href}
                 className="px-3 py-1.5 text-sm font-medium rounded transition-colors duration-200"
                 style={{
-                  color: pathname === link.href ? "#CD8136" : "white",
+                  color: pathname === link.href ? "#F8ECE1" : "white",
                   backgroundColor:
                     pathname === link.href
                       ? "rgba(0,0,0,0.2)"
                       : "transparent",
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLAnchorElement).style.color = "#CD8136";
+                  (e.target as HTMLAnchorElement).style.color = "#F8ECE1";
                   (e.target as HTMLAnchorElement).style.backgroundColor =
                     "rgba(0,0,0,0.2)";
                 }}
                 onMouseLeave={(e) => {
                   (e.target as HTMLAnchorElement).style.color =
-                    pathname === link.href ? "#CD8136" : "white";
+                    pathname === link.href ? "#F8ECE1" : "white";
                   (e.target as HTMLAnchorElement).style.backgroundColor =
                     pathname === link.href ? "rgba(0,0,0,0.2)" : "transparent";
                 }}
@@ -130,7 +130,7 @@ export default function Navbar() {
                 href={link.href}
                 className="block px-4 py-2.5 text-sm font-medium rounded transition-colors"
                 style={{
-                  color: pathname === link.href ? "#CD8136" : "white",
+                  color: pathname === link.href ? "#F8ECE1" : "white",
                   backgroundColor:
                     pathname === link.href ? "rgba(0,0,0,0.2)" : "transparent",
                 }}

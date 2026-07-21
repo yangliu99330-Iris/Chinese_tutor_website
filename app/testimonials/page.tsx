@@ -106,7 +106,7 @@ export default function Testimonials() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#CD8136" }}
+            style={{ color: "#F8ECE1" }}
           >
             Student Reviews
           </p>
@@ -124,7 +124,7 @@ export default function Testimonials() {
               <p className="font-playfair text-4xl font-bold text-white">4.9</p>
               <div className="flex">
                 {[1,2,3,4,5].map(i => (
-                  <span key={i} style={{ color: "#CD8136" }}>★</span>
+                  <span key={i} style={{ color: "#F8ECE1" }}>★</span>
                 ))}
               </div>
             </div>

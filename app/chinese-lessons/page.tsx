@@ -100,7 +100,7 @@ export default function ChineseLessons() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#CD8136" }}
+            style={{ color: "#F8ECE1" }}
           >
             普通话课程
           </p>
@@ -144,7 +144,7 @@ export default function ChineseLessons() {
                 >
                   <span
                     className="font-playfair text-4xl font-bold"
-                    style={{ color: "#CD8136" }}
+                    style={{ color: "#F8ECE1" }}
                   >
                     {c.char}
                   </span>
