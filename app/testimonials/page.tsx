@@ -83,9 +83,9 @@ const testimonials = [
 ];
 
 const programColors: Record<string, { bg: string; text: string }> = {
-  "Chinese Lessons": { bg: "#FEF9E7", text: "#9B1830" },
+  "Chinese Lessons": { bg: "#FCF9F5", text: "#C65C5C" },
   "Dance Lessons": { bg: "#F0F4FF", text: "#1e40af" },
-  "Both Programs": { bg: "#F5E6C8", text: "#9B1830" },
+  "Both Programs": { bg: "#F8ECE1", text: "#C65C5C" },
 };
 
 export default function Testimonials() {
@@ -94,7 +94,7 @@ export default function Testimonials() {
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <span
           className="absolute right-8 top-1/2 -translate-y-1/2 text-[14rem] font-bold select-none pointer-events-none hidden md:block"
@@ -106,7 +106,7 @@ export default function Testimonials() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#CD8136" }}
           >
             Student Reviews
           </p>
@@ -124,7 +124,7 @@ export default function Testimonials() {
               <p className="font-playfair text-4xl font-bold text-white">4.9</p>
               <div className="flex">
                 {[1,2,3,4,5].map(i => (
-                  <span key={i} style={{ color: "#D4AF37" }}>★</span>
+                  <span key={i} style={{ color: "#CD8136" }}>★</span>
                 ))}
               </div>
             </div>
@@ -137,21 +137,21 @@ export default function Testimonials() {
       </section>
 
       {/* ── Testimonials Grid ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {testimonials.map((t) => {
-              const progColor = programColors[t.program] ?? { bg: "#FFF8F0", text: "#9B1830" };
+              const progColor = programColors[t.program] ?? { bg: "#FCFCFC", text: "#C65C5C" };
               return (
                 <div
                   key={t.name}
                   className="break-inside-avoid bg-white rounded-xl p-6 shadow-sm border"
-                  style={{ borderColor: "#F5E6C8" }}
+                  style={{ borderColor: "#F8ECE1" }}
                 >
                   {/* Stars */}
                   <div className="flex mb-3">
                     {Array.from({ length: t.rating }).map((_, i) => (
-                      <span key={i} style={{ color: "#D4AF37" }}>★</span>
+                      <span key={i} style={{ color: "#CD8136" }}>★</span>
                     ))}
                   </div>
 
@@ -183,7 +183,7 @@ export default function Testimonials() {
       {/* ── CTA ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Your Success Story Starts Here
@@ -195,7 +195,7 @@ export default function Testimonials() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book My Free Trial →
         </Link>

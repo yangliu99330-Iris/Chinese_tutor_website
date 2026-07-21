@@ -50,7 +50,7 @@ export default function ChineseDanceLessons() {
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <span
           className="absolute right-8 top-1/2 -translate-y-1/2 text-[14rem] font-bold select-none pointer-events-none hidden md:block"
@@ -62,7 +62,7 @@ export default function ChineseDanceLessons() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#CD8136" }}
           >
             中国舞蹈课
           </p>
@@ -77,12 +77,12 @@ export default function ChineseDanceLessons() {
       </section>
 
       {/* ── Dance Styles ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Dance Programs
             </p>
@@ -104,20 +104,20 @@ export default function ChineseDanceLessons() {
                   className="md:w-1/3 flex items-center justify-center py-12 px-6 text-center"
                   style={{
                     background:
-                      "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
+                      "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
                   }}
                 >
                   <div>
                     <span
                       className="font-playfair text-7xl font-bold block mb-3"
-                      style={{ color: "#D4AF37" }}
+                      style={{ color: "#CD8136" }}
                     >
                       {style.char}
                     </span>
                     <h3 className="font-playfair text-xl font-bold text-white">
                       {style.title}
                     </h3>
-                    <p className="text-sm mt-1" style={{ color: "#D4AF37" }}>
+                    <p className="text-sm mt-1" style={{ color: "#CD8136" }}>
                       {style.subtitle}
                     </p>
                   </div>
@@ -132,7 +132,7 @@ export default function ChineseDanceLessons() {
                   <div className="grid sm:grid-cols-2 gap-2 mb-6">
                     {style.highlights.map((h) => (
                       <div key={h} className="flex items-start gap-2 text-sm text-gray-600">
-                        <span style={{ color: "#D4AF37" }} className="mt-0.5">✦</span>
+                        <span style={{ color: "#CD8136" }} className="mt-0.5">✦</span>
                         {h}
                       </div>
                     ))}
@@ -141,13 +141,13 @@ export default function ChineseDanceLessons() {
                   <div className="flex flex-wrap gap-4 text-xs text-gray-400">
                     <span
                       className="px-3 py-1.5 rounded-full"
-                      style={{ backgroundColor: "#FFF8F0", border: "1px solid #F5E6C8" }}
+                      style={{ backgroundColor: "#FCFCFC", border: "1px solid #F8ECE1" }}
                     >
                       ⏱ {style.duration}
                     </span>
                     <span
                       className="px-3 py-1.5 rounded-full"
-                      style={{ backgroundColor: "#FFF8F0", border: "1px solid #F5E6C8" }}
+                      style={{ backgroundColor: "#FCFCFC", border: "1px solid #F8ECE1" }}
                     >
                       🎯 {style.suitedFor}
                     </span>
@@ -165,7 +165,7 @@ export default function ChineseDanceLessons() {
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Why Dance?
             </p>
@@ -179,12 +179,12 @@ export default function ChineseDanceLessons() {
               <div
                 key={b.title}
                 className="rounded-xl p-6 text-center border"
-                style={{ borderColor: "#F5E6C8", backgroundColor: "#FFF8F0" }}
+                style={{ borderColor: "#F8ECE1", backgroundColor: "#FCFCFC" }}
               >
                 <span className="text-4xl mb-4 block">{b.icon}</span>
                 <h3
                   className="font-playfair font-bold text-lg mb-2"
-                  style={{ color: "#9B1830" }}
+                  style={{ color: "#C65C5C" }}
                 >
                   {b.title}
                 </h3>
@@ -196,11 +196,11 @@ export default function ChineseDanceLessons() {
       </section>
 
       {/* ── Ages & Levels ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-4xl mx-auto text-center">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-2"
-            style={{ color: "#C41E3A" }}
+            style={{ color: "#B668BD" }}
           >
             Who It&apos;s For
           </p>
@@ -219,8 +219,8 @@ export default function ChineseDanceLessons() {
                 key={age}
                 className="py-4 rounded-xl font-semibold text-sm"
                 style={{
-                  background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
-                  color: "#D4AF37",
+                  background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
+                  color: "#CD8136",
                 }}
               >
                 {age}
@@ -233,7 +233,7 @@ export default function ChineseDanceLessons() {
       {/* ── CTA ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Ready to Take the Stage?
@@ -245,7 +245,7 @@ export default function ChineseDanceLessons() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book a Dance Trial →
         </Link>

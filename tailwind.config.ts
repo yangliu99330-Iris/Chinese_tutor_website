@@ -10,17 +10,17 @@ export default {
     extend: {
       colors: {
         "chinese-red": {
-          DEFAULT: "#C41E3A",
-          dark: "#9B1830",
-          hover: "#A8192F",
+          DEFAULT: "#B668BD",
+          dark: "#C65C5C",
+          hover: "#9B58A1",
         },
         gold: {
-          DEFAULT: "#D4AF37",
-          light: "#F5E6C8",
-          pale: "#FEF9E7",
-          dark: "#B8960C",
+          DEFAULT: "#CD8136",
+          light: "#F8ECE1",
+          pale: "#FCF9F5",
+          dark: "#A4672B",
         },
-        cream: "#FFF8F0",
+        cream: "#FCFCFC",
       },
       fontFamily: {
         playfair: ["var(--font-playfair)", "Georgia", "serif"],

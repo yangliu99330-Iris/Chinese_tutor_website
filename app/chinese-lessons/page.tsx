@@ -88,7 +88,7 @@ export default function ChineseLessons() {
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <span
           className="absolute right-8 top-1/2 -translate-y-1/2 text-[14rem] font-bold select-none pointer-events-none hidden md:block"
@@ -100,7 +100,7 @@ export default function ChineseLessons() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#CD8136" }}
           >
             普通话课程
           </p>
@@ -115,12 +115,12 @@ export default function ChineseLessons() {
       </section>
 
       {/* ── Courses Grid ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               All Levels Welcome
             </p>
@@ -134,17 +134,17 @@ export default function ChineseLessons() {
               <div
                 key={c.title}
                 className="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition-shadow"
-                style={{ borderColor: "#F5E6C8" }}
+                style={{ borderColor: "#F8ECE1" }}
               >
                 <div
                   className="px-6 py-5 flex items-center gap-4"
                   style={{
-                    background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
+                    background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
                   }}
                 >
                   <span
                     className="font-playfair text-4xl font-bold"
-                    style={{ color: "#D4AF37" }}
+                    style={{ color: "#CD8136" }}
                   >
                     {c.char}
                   </span>
@@ -170,7 +170,7 @@ export default function ChineseLessons() {
                   <ul className="space-y-1.5 mb-5">
                     {c.topics.map((t) => (
                       <li key={t} className="flex items-start gap-2 text-sm text-gray-600">
-                        <span style={{ color: "#D4AF37" }}>✦</span>
+                        <span style={{ color: "#CD8136" }}>✦</span>
                         {t}
                       </li>
                     ))}
@@ -178,7 +178,7 @@ export default function ChineseLessons() {
 
                   <div
                     className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-400"
-                    style={{ borderTop: "1px solid #F5E6C8" }}
+                    style={{ borderTop: "1px solid #F8ECE1" }}
                   >
                     <span>⏱ {c.duration}</span>
                     <span>🎯 {c.suitable}</span>
@@ -196,7 +196,7 @@ export default function ChineseLessons() {
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Every Lesson Includes
             </p>
@@ -210,7 +210,7 @@ export default function ChineseLessons() {
               <div
                 key={item.title}
                 className="flex gap-4 p-5 rounded-xl border"
-                style={{ borderColor: "#F5E6C8", backgroundColor: "#FFF8F0" }}
+                style={{ borderColor: "#F8ECE1", backgroundColor: "#FCFCFC" }}
               >
                 <span className="text-3xl shrink-0">{item.icon}</span>
                 <div>
@@ -226,7 +226,7 @@ export default function ChineseLessons() {
       {/* ── CTA ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Not Sure Which Level to Start?
@@ -239,7 +239,7 @@ export default function ChineseLessons() {
           <Link
             href="/booking"
             className="px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+            style={{ backgroundColor: "#CD8136", color: "white" }}
           >
             Book a Free Assessment
           </Link>

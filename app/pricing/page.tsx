@@ -143,14 +143,14 @@ function PricingCard({ plan, accent }: {
         plan.highlighted ? "shadow-xl scale-[1.02]" : "shadow-sm"
       }`}
       style={{
-        borderColor: plan.highlighted ? accent : "#F5E6C8",
+        borderColor: plan.highlighted ? accent : "#F8ECE1",
         backgroundColor: "white",
       }}
     >
       {plan.highlighted && (
         <div
           className="py-2 text-center text-xs font-bold tracking-widest uppercase"
-          style={{ backgroundColor: accent, color: accent === "#D4AF37" ? "#9B1830" : "white" }}
+          style={{ backgroundColor: accent, color: "white" }}
         >
           Most Popular
         </div>
@@ -158,14 +158,14 @@ function PricingCard({ plan, accent }: {
 
       <div
         className="p-6 border-b"
-        style={{ borderColor: "#F5E6C8", backgroundColor: plan.highlighted ? "#FFF8F0" : "white" }}
+        style={{ borderColor: "#F8ECE1", backgroundColor: plan.highlighted ? "#FCFCFC" : "white" }}
       >
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-playfair font-bold text-xl text-gray-900">{plan.name}</h3>
           {plan.save && (
             <span
               className="text-xs font-bold px-2 py-1 rounded-full"
-              style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+              style={{ backgroundColor: "#CD8136", color: "white" }}
             >
               {plan.save}
             </span>
@@ -187,7 +187,7 @@ function PricingCard({ plan, accent }: {
         <ul className="space-y-2.5 flex-1">
           {plan.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-              <span style={{ color: "#D4AF37" }} className="mt-0.5 shrink-0">✓</span>
+              <span style={{ color: "#CD8136" }} className="mt-0.5 shrink-0">✓</span>
               {f}
             </li>
           ))}
@@ -198,8 +198,8 @@ function PricingCard({ plan, accent }: {
           className="mt-6 block text-center py-3 rounded font-bold text-sm transition-opacity hover:opacity-90"
           style={
             plan.highlighted
-              ? { backgroundColor: accent, color: accent === "#D4AF37" ? "#9B1830" : "white" }
-              : { backgroundColor: "#C41E3A", color: "white" }
+              ? { backgroundColor: accent, color: "white" }
+              : { backgroundColor: "#B668BD", color: "white" }
           }
         >
           {plan.cta}
@@ -215,7 +215,7 @@ export default function Pricing() {
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <span
           className="absolute right-8 top-1/2 -translate-y-1/2 text-[14rem] font-bold select-none pointer-events-none hidden md:block"
@@ -225,7 +225,7 @@ export default function Pricing() {
           价
         </span>
         <div className="relative z-10">
-          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#D4AF37" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#CD8136" }}>
             Transparent Rates
           </p>
           <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">
@@ -239,10 +239,10 @@ export default function Pricing() {
       </section>
 
       {/* ── Language Pricing ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <span className="font-playfair text-3xl font-bold" style={{ color: "#C41E3A" }}>中</span>
+            <span className="font-playfair text-3xl font-bold" style={{ color: "#B668BD" }}>中</span>
             <h2 className="font-playfair text-3xl font-bold text-gray-900 mt-1">
               Chinese Language Lessons
             </h2>
@@ -250,7 +250,7 @@ export default function Pricing() {
 
           <div className="grid md:grid-cols-3 gap-6 items-start">
             {languagePlans.map((plan) => (
-              <PricingCard key={plan.name} plan={plan} accent="#D4AF37" />
+              <PricingCard key={plan.name} plan={plan} accent="#CD8136" />
             ))}
           </div>
         </div>
@@ -260,7 +260,7 @@ export default function Pricing() {
       <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <span className="font-playfair text-3xl font-bold" style={{ color: "#C41E3A" }}>舞</span>
+            <span className="font-playfair text-3xl font-bold" style={{ color: "#B668BD" }}>舞</span>
             <h2 className="font-playfair text-3xl font-bold text-gray-900 mt-1">
               Chinese Dance Lessons
             </h2>
@@ -268,17 +268,17 @@ export default function Pricing() {
 
           <div className="grid md:grid-cols-3 gap-6 items-start">
             {dancePlans.map((plan) => (
-              <PricingCard key={plan.name} plan={plan} accent="#C41E3A" />
+              <PricingCard key={plan.name} plan={plan} accent="#B668BD" />
             ))}
           </div>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#C41E3A" }}>
+            <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#B668BD" }}>
               Questions
             </p>
             <h2 className="font-playfair text-3xl font-bold text-gray-900">
@@ -291,9 +291,9 @@ export default function Pricing() {
               <div
                 key={faq.q}
                 className="bg-white rounded-xl p-6 border"
-                style={{ borderColor: "#F5E6C8" }}
+                style={{ borderColor: "#F8ECE1" }}
               >
-                <h3 className="font-semibold text-gray-900 mb-2" style={{ color: "#9B1830" }}>
+                <h3 className="font-semibold text-gray-900 mb-2" style={{ color: "#C65C5C" }}>
                   {faq.q}
                 </h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{faq.a}</p>
@@ -306,7 +306,7 @@ export default function Pricing() {
       {/* ── CTA ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Start with a Free Trial
@@ -318,7 +318,7 @@ export default function Pricing() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book My Free Trial →
         </Link>

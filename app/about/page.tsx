@@ -36,7 +36,7 @@ const credentials = [
   "Certificate in Mandarin Language Teaching (CTCSOL)",
   "Certified Chinese Classical Dance Instructor",
   "HSK 6 (Highest Proficiency Level)",
-  "6+ years of professional tutoring experience",
+  "5+ years of professional Mandarin teaching experience",
   "Trained at the Beijing Dance Academy",
 ];
 
@@ -47,7 +47,7 @@ export default function About() {
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
+          background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
         }}
       >
         <span
@@ -60,7 +60,7 @@ export default function About() {
         <div className="relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#CD8136" }}
           >
             Meet Your Tutor
           </p>
@@ -80,7 +80,7 @@ export default function About() {
             {/* Profile photo */}
             <div
               className="relative rounded-2xl overflow-hidden aspect-square max-w-sm mx-auto w-full shadow-xl"
-              style={{ border: "3px solid #D4AF37" }}
+              style={{ border: "3px solid #CD8136" }}
             >
               <Image
                 src="/tutor-yang.jpg"
@@ -96,7 +96,7 @@ export default function About() {
             <div>
               <p
                 className="text-sm font-semibold uppercase tracking-widest mb-3"
-                style={{ color: "#C41E3A" }}
+                style={{ color: "#B668BD" }}
               >
                 My Story
               </p>
@@ -111,25 +111,29 @@ export default function About() {
                   were the way I understood the world.
                 </p>
                 <p>
-                  After completing formal studies in Chinese Language Literature
-                  and earning my teaching certifications, I moved abroad to
-                  share this incredible culture with students of all backgrounds.
-                  Over six years, I have had the privilege of teaching more than
-                  200 students — from curious children to busy professionals
-                  preparing for HSK exams.
+                  I obtained my bachelor&apos;s degree from a Normal University
+                  in China, specialising in education, and received my
+                  Putonghua Teaching Certification in 2015. I later earned a
+                  master&apos;s degree from a university in Japan in 2021,
+                  which deepened my passion for cross-cultural connection.
                 </p>
                 <p>
-                  My greatest reward is watching students light up when they
-                  have their first real conversation in Mandarin, or nail a
-                  performance after weeks of dedicated practice. That moment
-                  makes every lesson worthwhile.
+                  Now based in the UK and working at a local school in
+                  Scotland, I bring 12 years of teaching experience to every
+                  lesson. I have had the privilege of teaching Mandarin to
+                  over 200 students — from curious children to busy
+                  professionals preparing for HSK exams. My greatest reward is
+                  watching students light up during their first real
+                  conversation in Mandarin, or nail a performance after weeks
+                  of dedicated practice. That moment makes every lesson
+                  worthwhile.
                 </p>
               </div>
 
               <Link
                 href="/booking"
                 className="inline-block mt-8 px-6 py-3 rounded font-bold text-sm transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#C41E3A", color: "white" }}
+                style={{ backgroundColor: "#B668BD", color: "white" }}
               >
                 Book a Lesson with Me
               </Link>
@@ -139,12 +143,12 @@ export default function About() {
       </section>
 
       {/* ── Teaching Philosophy ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Teaching Philosophy
             </p>
@@ -158,17 +162,17 @@ export default function About() {
               <div
                 key={p.title}
                 className="bg-white rounded-xl p-6 text-center shadow-sm border"
-                style={{ borderColor: "#F5E6C8" }}
+                style={{ borderColor: "#F8ECE1" }}
               >
                 <span
                   className="font-playfair text-5xl font-bold block mb-3"
-                  style={{ color: "#C41E3A" }}
+                  style={{ color: "#B668BD" }}
                 >
                   {p.char}
                 </span>
                 <h3
                   className="font-playfair font-bold text-lg mb-2"
-                  style={{ color: "#9B1830" }}
+                  style={{ color: "#C65C5C" }}
                 >
                   {p.title}
                 </h3>
@@ -185,7 +189,7 @@ export default function About() {
           <div className="text-center mb-10">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Qualifications
             </p>
@@ -199,11 +203,11 @@ export default function About() {
               <li
                 key={c}
                 className="flex items-start gap-3 p-4 rounded-lg"
-                style={{ backgroundColor: "#FFF8F0", border: "1px solid #F5E6C8" }}
+                style={{ backgroundColor: "#FCFCFC", border: "1px solid #F8ECE1" }}
               >
                 <span
                   className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                  style={{ backgroundColor: "#D4AF37" }}
+                  style={{ backgroundColor: "#CD8136" }}
                 >
                   ✓
                 </span>
@@ -217,7 +221,7 @@ export default function About() {
       {/* ── CTA ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Let&apos;s Learn Together
@@ -229,7 +233,7 @@ export default function About() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book My Free Trial →
         </Link>

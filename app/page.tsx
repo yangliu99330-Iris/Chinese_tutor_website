@@ -77,7 +77,7 @@ export default function Home() {
       <section
         className="relative overflow-hidden min-h-[90vh] flex items-center"
         style={{
-          background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
+          background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
         }}
       >
         {/* Decorative characters */}
@@ -99,7 +99,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-24 relative z-10">
           <p
             className="text-sm font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#CD8136" }}
           >
             杨老师 — Tutor Yang
           </p>
@@ -114,7 +114,7 @@ export default function Home() {
             <Link
               href="/booking"
               className="px-7 py-3.5 rounded font-bold text-sm transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+              style={{ backgroundColor: "#CD8136", color: "white" }}
             >
               Book a Free Trial Lesson
             </Link>
@@ -137,7 +137,7 @@ export default function Home() {
               <div key={s.label}>
                 <p
                   className="font-playfair text-4xl font-bold"
-                  style={{ color: "#C41E3A" }}
+                  style={{ color: "#B668BD" }}
                 >
                   {s.value}
                 </p>
@@ -149,12 +149,12 @@ export default function Home() {
       </section>
 
       {/* ── Programs ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Our Programs
             </p>
@@ -169,7 +169,7 @@ export default function Home() {
                 key={p.title}
                 className="relative rounded-2xl overflow-hidden shadow-lg"
                 style={{
-                  background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)",
+                  background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)",
                 }}
               >
                 <span
@@ -182,14 +182,14 @@ export default function Home() {
                 <div className="relative z-10 p-8 md:p-10">
                   <p
                     className="font-playfair text-5xl font-bold mb-2"
-                    style={{ color: "#D4AF37" }}
+                    style={{ color: "#CD8136" }}
                   >
                     {p.char}
                   </p>
                   <h3 className="font-playfair text-2xl font-bold text-white mb-1">
                     {p.title}
                   </h3>
-                  <p className="text-sm mb-4" style={{ color: "#D4AF37" }}>
+                  <p className="text-sm mb-4" style={{ color: "#CD8136" }}>
                     {p.subtitle}
                   </p>
                   <p className="text-white/80 text-sm leading-relaxed mb-6">
@@ -198,7 +198,7 @@ export default function Home() {
                   <Link
                     href={p.href}
                     className="inline-block px-5 py-2.5 rounded font-bold text-sm transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+                    style={{ backgroundColor: "#CD8136", color: "white" }}
                   >
                     {p.cta} →
                   </Link>
@@ -215,7 +215,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Why Tutor Yang
             </p>
@@ -229,12 +229,12 @@ export default function Home() {
               <div
                 key={f.title}
                 className="rounded-xl p-6 text-center border transition-shadow hover:shadow-md"
-                style={{ borderColor: "#F5E6C8" }}
+                style={{ borderColor: "#F8ECE1" }}
               >
                 <span className="text-4xl mb-4 block">{f.icon}</span>
                 <h3
                   className="font-playfair font-bold text-lg mb-2"
-                  style={{ color: "#9B1830" }}
+                  style={{ color: "#C65C5C" }}
                 >
                   {f.title}
                 </h3>
@@ -246,12 +246,12 @@ export default function Home() {
       </section>
 
       {/* ── Testimonials Preview ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <p
               className="text-sm font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "#C41E3A" }}
+              style={{ color: "#B668BD" }}
             >
               Student Stories
             </p>
@@ -265,11 +265,11 @@ export default function Home() {
               <div
                 key={t.name}
                 className="bg-white rounded-xl p-6 shadow-sm border"
-                style={{ borderColor: "#F5E6C8" }}
+                style={{ borderColor: "#F8ECE1" }}
               >
                 <div className="flex mb-3">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <span key={i} style={{ color: "#D4AF37" }}>
+                    <span key={i} style={{ color: "#CD8136" }}>
                       ★
                     </span>
                   ))}
@@ -289,7 +289,7 @@ export default function Home() {
             <Link
               href="/testimonials"
               className="inline-block px-6 py-2.5 rounded border-2 font-semibold text-sm transition-colors hover:bg-chinese-red hover:text-white"
-              style={{ borderColor: "#C41E3A", color: "#C41E3A" }}
+              style={{ borderColor: "#B668BD", color: "#B668BD" }}
             >
               Read More Reviews
             </Link>
@@ -300,7 +300,7 @@ export default function Home() {
       {/* ── CTA Banner ── */}
       <section
         className="py-20 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <p
           className="font-playfair text-3xl md:text-4xl font-bold text-white mb-4 text-shadow"
@@ -314,7 +314,7 @@ export default function Home() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book My Free Trial →
         </Link>

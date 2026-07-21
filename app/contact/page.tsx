@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 const contactDetails = [
-  { icon: "✉", label: "Email", value: "contact@chinesetutoryang.com", href: "mailto:contact@chinesetutoryang.com" },
+  { icon: "✉", label: "Email", value: "chinesetutoryang@gmail.com", href: "mailto:chinesetutoryang@gmail.com" },
   { icon: "⏰", label: "Hours", value: "Monday – Saturday: 9 AM – 7 PM", href: null },
   { icon: "💻", label: "Lessons", value: "Online (Zoom) & In-Person", href: null },
   { icon: "📍", label: "Location", value: "Local area & worldwide via Zoom", href: null },
@@ -45,7 +45,7 @@ export default function Contact() {
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <span
           className="absolute right-8 top-1/2 -translate-y-1/2 text-[14rem] font-bold select-none pointer-events-none hidden md:block"
@@ -55,7 +55,7 @@ export default function Contact() {
           联
         </span>
         <div className="relative z-10">
-          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#D4AF37" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: "#CD8136" }}>
             Get in Touch
           </p>
           <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">
@@ -69,13 +69,13 @@ export default function Contact() {
       </section>
 
       {/* ── Contact Section ── */}
-      <section className="section-padding" style={{ backgroundColor: "#FFF8F0" }}>
+      <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-10">
 
             {/* Contact Info */}
             <div>
-              <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#C41E3A" }}>
+              <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#B668BD" }}>
                 Contact Details
               </p>
               <h2 className="font-playfair text-2xl font-bold text-gray-900 mb-6">
@@ -87,7 +87,7 @@ export default function Contact() {
                   <li key={d.label} className="flex items-start gap-4">
                     <span
                       className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
-                      style={{ backgroundColor: "#C41E3A", color: "#D4AF37" }}
+                      style={{ backgroundColor: "#B668BD", color: "white" }}
                     >
                       {d.icon}
                     </span>
@@ -97,7 +97,7 @@ export default function Contact() {
                         <a
                           href={d.href}
                           className="text-gray-700 hover:underline"
-                          style={{ color: "#C41E3A" }}
+                          style={{ color: "#B668BD" }}
                         >
                           {d.value}
                         </a>
@@ -112,7 +112,7 @@ export default function Contact() {
               {/* Response time badge */}
               <div
                 className="rounded-xl p-5 border"
-                style={{ backgroundColor: "white", borderColor: "#F5E6C8" }}
+                style={{ backgroundColor: "white", borderColor: "#F8ECE1" }}
               >
                 <p className="font-semibold text-gray-900 mb-1">⚡ Quick Response</p>
                 <p className="text-gray-500 text-sm">
@@ -125,7 +125,7 @@ export default function Contact() {
                 <Link
                   href="/booking"
                   className="inline-block px-6 py-3 rounded font-bold text-sm transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: "#C41E3A", color: "white" }}
+                  style={{ backgroundColor: "#B668BD", color: "white" }}
                 >
                   Or Book Directly →
                 </Link>
@@ -135,11 +135,11 @@ export default function Contact() {
             {/* Contact Form */}
             <div
               className="bg-white rounded-2xl shadow-sm p-8 border"
-              style={{ borderColor: "#F5E6C8" }}
+              style={{ borderColor: "#F8ECE1" }}
             >
               {submitted ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-10">
-                  <span className="text-5xl mb-4" style={{ color: "#D4AF37" }}>✓</span>
+                  <span className="text-5xl mb-4" style={{ color: "#CD8136" }}>✓</span>
                   <h3 className="font-playfair text-2xl font-bold text-gray-900 mb-3">
                     Message Sent!
                   </h3>
@@ -152,7 +152,7 @@ export default function Contact() {
                 <>
                   <h3
                     className="font-playfair text-xl font-bold mb-6"
-                    style={{ color: "#9B1830" }}
+                    style={{ color: "#C65C5C" }}
                   >
                     Send a Message
                   </h3>
@@ -169,7 +169,7 @@ export default function Contact() {
                           required
                           placeholder="Jane"
                           className="w-full border rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 transition"
-                          style={{ borderColor: "#F5E6C8", focusRingColor: "#C41E3A" } as React.CSSProperties}
+                          style={{ borderColor: "#F8ECE1", focusRingColor: "#B668BD" } as React.CSSProperties}
                         />
                       </div>
                       <div>
@@ -182,7 +182,7 @@ export default function Contact() {
                           required
                           placeholder="Smith"
                           className="w-full border rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 transition"
-                          style={{ borderColor: "#F5E6C8" }}
+                          style={{ borderColor: "#F8ECE1" }}
                         />
                       </div>
                     </div>
@@ -197,7 +197,7 @@ export default function Contact() {
                         required
                         placeholder="jane@example.com"
                         className="w-full border rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 transition"
-                        style={{ borderColor: "#F5E6C8" }}
+                        style={{ borderColor: "#F8ECE1" }}
                       />
                     </div>
 
@@ -208,7 +208,7 @@ export default function Contact() {
                       <select
                         name="interest"
                         className="w-full border rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 transition bg-white"
-                        style={{ borderColor: "#F5E6C8" }}
+                        style={{ borderColor: "#F8ECE1" }}
                       >
                         <option value="">Select a program…</option>
                         <option value="mandarin-beginner">Mandarin – Beginner</option>
@@ -232,7 +232,7 @@ export default function Contact() {
                         rows={4}
                         placeholder="Tell us a bit about your goals, experience level, or any questions…"
                         className="w-full border rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 transition resize-none"
-                        style={{ borderColor: "#F5E6C8" }}
+                        style={{ borderColor: "#F8ECE1" }}
                       />
                     </div>
 
@@ -240,7 +240,7 @@ export default function Contact() {
                       type="submit"
                       disabled={loading}
                       className="w-full py-3 rounded font-bold text-sm transition-opacity hover:opacity-90 disabled:opacity-60"
-                      style={{ backgroundColor: "#C41E3A", color: "white" }}
+                      style={{ backgroundColor: "#B668BD", color: "white" }}
                     >
                       {loading ? "Sending…" : "Send Message →"}
                     </button>
@@ -259,7 +259,7 @@ export default function Contact() {
       {/* ── Bottom CTA ── */}
       <section
         className="py-16 px-4 text-center"
-        style={{ background: "linear-gradient(135deg, #C41E3A 0%, #9B1830 100%)" }}
+        style={{ background: "linear-gradient(135deg, #B668BD 0%, #C65C5C 100%)" }}
       >
         <h2 className="font-playfair text-3xl font-bold text-white mb-4">
           Ready to Begin?
@@ -270,7 +270,7 @@ export default function Contact() {
         <Link
           href="/booking"
           className="inline-block px-8 py-4 rounded font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#D4AF37", color: "#9B1830" }}
+          style={{ backgroundColor: "#CD8136", color: "white" }}
         >
           Book a Lesson Now →
         </Link>
