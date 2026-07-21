@@ -10,13 +10,13 @@ export interface SlotSelection {
 // ── Editable configuration ──────────────────────────────────────────────
 // Business hours per weekday (0 = Sunday ... 6 = Saturday). `null` = closed.
 export const BUSINESS_HOURS: Record<number, { start: string; end: string } | null> = {
-  0: null, // Sunday - closed
+  0: { start: "09:00", end: "18:00" },
   1: { start: "09:00", end: "18:00" },
   2: { start: "09:00", end: "18:00" },
   3: { start: "09:00", end: "18:00" },
   4: { start: "09:00", end: "18:00" },
   5: { start: "09:00", end: "18:00" },
-  6: { start: "10:00", end: "15:00" },
+  6: { start: "09:00", end: "18:00" },
 };
 
 export const SLOT_INTERVAL_MINUTES = 15;

@@ -90,7 +90,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <span style={{ color: "#CD8136" }}>⏰</span>
-                <span>Mon – Sat: 9 AM – 7 PM</span>
+                <span>Mon – Sun: 9 AM – 6 PM</span>
               </li>
             </ul>
 

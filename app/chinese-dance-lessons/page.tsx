@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Chinese Dance Lessons | Chinese Tutor Yang",
   description:
-    "Learn Chinese classical, folk, and contemporary dance with Tutor Yang. Open to all ages and experience levels.",
+    "Learn Chinese classical, folk, and contemporary dance, or ballet, with Tutor Yang. Open to all ages and experience levels.",
 };
 
 const danceStyles = [
@@ -34,6 +34,15 @@ const danceStyles = [
     highlights: ["Modern floor work & improvisation", "Chinese contemporary repertoire", "Creative expression & storytelling", "Audition & competition prep"],
     suitedFor: "Intermediate & Advanced",
     duration: "75 min / session",
+  },
+  {
+    char: "芭",
+    title: "Ballet",
+    subtitle: "芭蕾舞",
+    desc: "Classical ballet technique builds the posture, extension, and control that support every other dance style. Lessons cover barre work, positions, and graceful movement — a strong foundation for dancers of all backgrounds.",
+    highlights: ["Barre technique & positions", "Posture, turnout & extension", "Grace, poise & control", "Cross-training for other dance styles"],
+    suitedFor: "All levels welcome",
+    duration: "60 min / session",
   },
 ];
 
@@ -87,7 +96,7 @@ export default function ChineseDanceLessons() {
               Dance Programs
             </p>
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-gray-900">
-              Three Styles, One Rich Tradition
+              Four Styles, One Rich Tradition
             </h2>
           </div>
 

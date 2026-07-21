@@ -7,7 +7,7 @@ const contactDetails = [
   { icon: "✉", label: "Email", value: "chinesetutoryang@gmail.com", href: "mailto:chinesetutoryang@gmail.com" },
   { icon: "💬", label: "WhatsApp", value: "+44 7422 541081", href: "https://wa.me/447422541081" },
   { icon: "🇨🇳", label: "WeChat", value: "Iris-BaiLan", href: null },
-  { icon: "⏰", label: "Hours", value: "Monday – Saturday: 9 AM – 7 PM", href: null },
+  { icon: "⏰", label: "Hours", value: "Monday – Sunday: 9 AM – 6 PM", href: null },
   { icon: "💻", label: "Lessons", value: "Online (Zoom) & In-Person", href: null },
   { icon: "📍", label: "Location", value: "Local area & worldwide via Zoom", href: null },
 ];
