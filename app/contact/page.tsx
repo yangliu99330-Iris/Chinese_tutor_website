@@ -61,7 +61,7 @@ export default function Contact() {
             Get in Touch
           </p>
           <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">
-            Contact Tutor Yang
+            Contact Miss Yang
           </h1>
           <p className="text-white/75 max-w-xl mx-auto text-lg">
             Have a question or want to discuss a program? Send a message and
@@ -118,7 +118,7 @@ export default function Contact() {
               >
                 <p className="font-semibold text-gray-900 mb-1">⚡ Quick Response</p>
                 <p className="text-gray-500 text-sm">
-                  Tutor Yang typically replies within a few hours on weekdays.
+                  Miss Yang typically replies within a few hours on weekdays.
                   For urgent booking enquiries, please email directly.
                 </p>
               </div>
@@ -146,7 +146,7 @@ export default function Contact() {
                     Message Sent!
                   </h3>
                   <p className="text-gray-500 text-sm max-w-xs">
-                    Thank you for reaching out. Tutor Yang will be in touch
+                    Thank you for reaching out. Miss Yang will be in touch
                     within one business day.
                   </p>
                 </div>
@@ -268,7 +268,7 @@ export default function Contact() {
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
           Skip the wait — book your trial lesson directly from the calendar,
-          or message Tutor Yang first on WhatsApp, WeChat, or email.
+          or message Miss Yang first on WhatsApp, WeChat, or email.
         </p>
         <Link
           href="/booking"

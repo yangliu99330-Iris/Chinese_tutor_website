@@ -5,7 +5,7 @@ import BookingFlow from "@/components/booking/BookingFlow";
 export const metadata: Metadata = {
   title: "Book a Lesson | Chinese Tutor Yang",
   description:
-    "Book your Mandarin or Chinese Dance lesson with Tutor Yang. Select a time that suits you directly from the calendar below.",
+    "Book your Mandarin or Chinese Dance lesson with Miss Yang. Select a time that suits you directly from the calendar below.",
 };
 
 
@@ -36,7 +36,7 @@ export default function Booking() {
           </h1>
           <p className="text-white/75 max-w-xl mx-auto text-lg">
             Select a time that works for you. Not sure where to start? Message
-            Tutor Yang on WhatsApp, WeChat, or email first.
+            Miss Yang on WhatsApp, WeChat, or email first.
           </p>
         </div>
       </section>

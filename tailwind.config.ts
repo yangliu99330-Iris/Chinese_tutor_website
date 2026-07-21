@@ -23,8 +23,8 @@ export default {
         cream: "#FCFCFC",
       },
       fontFamily: {
-        playfair: ["var(--font-playfair)", "Georgia", "serif"],
-        inter: ["var(--font-inter)", "system-ui", "sans-serif"],
+        playfair: ["var(--font-playfair)", "var(--font-noto-serif-sc)", "Georgia", "serif"],
+        inter: ["var(--font-inter)", "var(--font-noto-serif-sc)", "system-ui", "sans-serif"],
       },
     },
   },

@@ -26,7 +26,7 @@ const features = [
   {
     icon: "📅",
     title: "Flexible Scheduling",
-    desc: "Online and in-person sessions available six days a week to fit around your busy life.",
+    desc: "Online and in-person sessions available seven days a week to fit around your busy life.",
   },
 ];
 
@@ -35,7 +35,7 @@ const programs = [
     char: "中",
     title: "Chinese Language Lessons",
     subtitle: "普通话",
-    desc: "From absolute beginner to advanced — Tutor Yang offers one-on-one Mandarin lessons covering speaking, reading, writing, and HSK exam preparation.",
+    desc: "From absolute beginner to advanced — Miss Yang offers one-on-one Mandarin lessons covering speaking, reading, writing, and HSK exam preparation.",
     href: "/chinese-lessons",
     cta: "Explore Lessons",
   },
@@ -54,13 +54,13 @@ const testimonials = [
     name: "Sarah M.",
     role: "Beginner Mandarin Student",
     quote:
-      "Learning Mandarin with Tutor Yang has been the best decision I've made. Her patience and structured approach made the tones click in just weeks!",
+      "Learning Mandarin with Miss Yang has been the best decision I've made. Her patience and structured approach made the tones click in just weeks!",
   },
   {
     name: "David L.",
     role: "HSK 3 Candidate",
     quote:
-      "I went from zero Chinese to passing HSK 3 in eight months. Tutor Yang's enthusiasm and systematic teaching is truly unmatched.",
+      "I went from zero Chinese to passing HSK 3 in eight months. Miss Yang's enthusiasm and systematic teaching is truly unmatched.",
   },
   {
     name: "Jennifer K.",
@@ -101,7 +101,7 @@ export default function Home() {
             className="text-sm font-semibold uppercase tracking-widest mb-4"
             style={{ color: "#F8ECE1" }}
           >
-            杨老师 — Tutor Yang
+            杨老师 — Miss Yang
           </p>
           <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-2xl mb-6 text-shadow">
             Master Chinese Language &amp; Culture
@@ -217,10 +217,10 @@ export default function Home() {
               className="text-sm font-semibold uppercase tracking-widest mb-2"
               style={{ color: "#B668BD" }}
             >
-              Why Tutor Yang
+              Why Miss Yang
             </p>
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-gray-900">
-              The Tutor Yang Difference
+              The Miss Yang Difference
             </h2>
           </div>
 
@@ -308,7 +308,7 @@ export default function Home() {
           Ready to Start Your Chinese Journey?
         </p>
         <p className="text-white/80 mb-8 max-w-lg mx-auto">
-          Book a Trial Lesson, or message Tutor Yang first on WhatsApp, WeChat,
+          Book a Trial Lesson, or message Miss Yang first on WhatsApp, WeChat,
           or email to find the right program for you.
         </p>
         <Link

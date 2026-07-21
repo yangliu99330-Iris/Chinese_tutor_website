@@ -12,7 +12,7 @@ const testimonials = [
     name: "Sarah M.",
     role: "Beginner Mandarin Student",
     quote:
-      "Learning Mandarin with Tutor Yang has been an absolute joy. Her patience and structured approach made the tones click in just a few weeks. I went from dreading the language to genuinely loving it!",
+      "Learning Mandarin with Miss Yang has been an absolute joy. Her patience and structured approach made the tones click in just a few weeks. I went from dreading the language to genuinely loving it!",
     program: "Chinese Lessons",
     rating: 5,
   },
@@ -20,7 +20,7 @@ const testimonials = [
     name: "David L.",
     role: "HSK 3 Candidate",
     quote:
-      "I went from zero Chinese to passing HSK 3 in eight months. Tutor Yang's methodical approach and genuine enthusiasm for teaching is truly unmatched. She made every session engaging and productive.",
+      "I went from zero Chinese to passing HSK 3 in eight months. Miss Yang's methodical approach and genuine enthusiasm for teaching is truly unmatched. She made every session engaging and productive.",
     program: "Chinese Lessons",
     rating: 5,
   },
@@ -28,7 +28,7 @@ const testimonials = [
     name: "Jennifer K.",
     role: "Parent",
     quote:
-      "My daughter started dance lessons at age 7. The transformation has been incredible — she performs classical Chinese dances with such grace and confidence now. Tutor Yang has a special gift for working with children.",
+      "My daughter started dance lessons at age 7. The transformation has been incredible — she performs classical Chinese dances with such grace and confidence now. Miss Yang has a special gift for working with children.",
     program: "Dance Lessons",
     rating: 5,
   },
@@ -36,7 +36,7 @@ const testimonials = [
     name: "Michael T.",
     role: "Business Professional",
     quote:
-      "I needed Mandarin for work with our Chinese partners. Tutor Yang designed a Business Mandarin curriculum that was immediately practical. Within three months I was holding simple meetings in Chinese.",
+      "I needed Mandarin for work with our Chinese partners. Miss Yang designed a Business Mandarin curriculum that was immediately practical. Within three months I was holding simple meetings in Chinese.",
     program: "Chinese Lessons",
     rating: 5,
   },
@@ -44,7 +44,7 @@ const testimonials = [
     name: "Emma W.",
     role: "Heritage Language Learner",
     quote:
-      "My parents are from Guangzhou but I grew up speaking only English. Tutor Yang helped me reconnect with my roots. My grandparents cried the first time I spoke to them in Mandarin.",
+      "My parents are from Guangzhou but I grew up speaking only English. Miss Yang helped me reconnect with my roots. My grandparents cried the first time I spoke to them in Mandarin.",
     program: "Chinese Lessons",
     rating: 5,
   },
@@ -52,7 +52,7 @@ const testimonials = [
     name: "Lily Z.",
     role: "Teen Dance Student",
     quote:
-      "I&apos;ve tried other dance schools but nothing compares. Tutor Yang explains the cultural meaning behind every movement, which makes me feel connected to something much bigger than just steps.",
+      "I&apos;ve tried other dance schools but nothing compares. Miss Yang explains the cultural meaning behind every movement, which makes me feel connected to something much bigger than just steps.",
     program: "Dance Lessons",
     rating: 5,
   },
@@ -60,7 +60,7 @@ const testimonials = [
     name: "Robert & Amy C.",
     role: "Parents of Two Students",
     quote:
-      "Both our children — one takes Mandarin, the other dance — look forward to their lessons every week. That&apos;s not easy to achieve! Tutor Yang is patient, professional, and genuinely invested in their progress.",
+      "Both our children — one takes Mandarin, the other dance — look forward to their lessons every week. That&apos;s not easy to achieve! Miss Yang is patient, professional, and genuinely invested in their progress.",
     program: "Both Programs",
     rating: 5,
   },
@@ -68,7 +68,7 @@ const testimonials = [
     name: "Priya N.",
     role: "Intermediate Student",
     quote:
-      "I had hit a plateau with self-study apps. Tutor Yang identified exactly where my gaps were in the first lesson and built a plan around them. My speaking confidence has gone through the roof.",
+      "I had hit a plateau with self-study apps. Miss Yang identified exactly where my gaps were in the first lesson and built a plan around them. My speaking confidence has gone through the roof.",
     program: "Chinese Lessons",
     rating: 5,
   },
@@ -76,7 +76,7 @@ const testimonials = [
     name: "James R.",
     role: "Adult Dance Beginner",
     quote:
-      "I&apos;m 42 and never danced in my life. Tutor Yang made me feel comfortable from day one. I now perform in community showcases — something I&apos;d never have dreamed of a year ago!",
+      "I&apos;m 42 and never danced in my life. Miss Yang made me feel comfortable from day one. I now perform in community showcases — something I&apos;d never have dreamed of a year ago!",
     program: "Dance Lessons",
     rating: 5,
   },
@@ -190,7 +190,7 @@ export default function Testimonials() {
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
           Join the growing community of students learning Mandarin and Chinese
-          dance with Tutor Yang.
+          dance with Miss Yang.
         </p>
         <Link
           href="/booking"

@@ -232,7 +232,7 @@ export default function ChineseLessons() {
           Not Sure Which Level to Start?
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
-          Message Tutor Yang on WhatsApp, WeChat, or email and she&apos;ll
+          Message Miss Yang on WhatsApp, WeChat, or email and she&apos;ll
           recommend the perfect course for your current level and goals.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">

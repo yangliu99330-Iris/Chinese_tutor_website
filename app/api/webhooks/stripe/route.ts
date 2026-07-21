@@ -39,7 +39,7 @@ async function sendCustomerEmail(session: Stripe.Checkout.Session) {
         <p><strong>${lessonLabel}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"})</p>
         ${lessonListHtml(m.slots_summary ?? "")}
         <p><strong>Total paid:</strong> ${amount}</p>
-        <p>Tutor Yang will reach out if any details need confirming. If you have questions, just reply to this email or reach chinesetutoryang@gmail.com.</p>
+        <p>Miss Yang will reach out if any details need confirming. If you have questions, just reply to this email or reach chinesetutoryang@gmail.com.</p>
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">学无止境 — Learning Has No Limits</p>
       </div>
     `,

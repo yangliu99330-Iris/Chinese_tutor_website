@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About Me | Chinese Tutor Yang",
   description:
-    "Learn about Tutor Yang's background, teaching philosophy, credentials, and passion for sharing Chinese language and dance.",
+    "Learn about Miss Yang's background, teaching philosophy, credentials, and passion for sharing Chinese language and dance.",
 };
 
 const pillars = [
@@ -65,7 +65,7 @@ export default function About() {
             Meet Your Tutor
           </p>
           <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">
-            About Tutor Yang
+            About Miss Yang
           </h1>
           <p className="text-white/75 max-w-xl mx-auto text-lg">
             Passionate educator, cultural ambassador, and lifelong learner.
@@ -84,7 +84,7 @@ export default function About() {
             >
               <Image
                 src="/tutor-yang.jpg"
-                alt="Tutor Yang"
+                alt="Miss Yang"
                 fill
                 className="object-cover object-top"
                 sizes="(max-width: 768px) 100vw, 384px"
@@ -227,7 +227,7 @@ export default function About() {
           Let&apos;s Learn Together
         </h2>
         <p className="text-white/80 mb-8 max-w-md mx-auto">
-          Book a Trial Lesson and experience the Tutor Yang difference for
+          Book a Trial Lesson and experience the Miss Yang difference for
           yourself.
         </p>
         <Link

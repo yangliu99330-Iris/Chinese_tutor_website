@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Chinese Dance Lessons | Chinese Tutor Yang",
   description:
-    "Learn Chinese classical, folk, and contemporary dance, or ballet, with Tutor Yang. Open to all ages and experience levels.",
+    "Learn Chinese classical, folk, and contemporary dance, or ballet, with Miss Yang. Open to all ages and experience levels.",
 };
 
 const danceStyles = [
@@ -217,7 +217,7 @@ export default function ChineseDanceLessons() {
             Dance Lessons for Every Age
           </h2>
           <p className="text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            From age 4 to adult, Tutor Yang tailors every lesson to the
+            From age 4 to adult, Miss Yang tailors every lesson to the
             student&apos;s physical ability, age, and goals. No prior dance
             experience is needed — only enthusiasm!
           </p>

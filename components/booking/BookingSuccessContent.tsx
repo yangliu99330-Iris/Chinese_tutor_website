@@ -56,7 +56,7 @@ export default function BookingSuccessContent() {
       <span className="text-5xl block mb-4">✅</span>
       <h1 className="font-playfair text-3xl font-bold text-gray-900 mb-3">Booking Confirmed!</h1>
       <p className="text-gray-500 mb-8">
-        Thanks{info.customerEmail ? `, we've sent a receipt to ${info.customerEmail}` : ""}. Tutor Yang will
+        Thanks{info.customerEmail ? `, we've sent a receipt to ${info.customerEmail}` : ""}. Miss Yang will
         reach out to confirm any final details.
       </p>
 
