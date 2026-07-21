@@ -13,7 +13,7 @@ type Step = "time" | "checkout";
 
 export default function BookingFlow() {
   const [step, setStep] = useState<Step>("time");
-  const [lessonType, setLessonType] = useState<LessonTypeId>("chinese-language");
+  const [lessonType, setLessonType] = useState<LessonTypeId>("private");
   const [viewMonth, setViewMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);

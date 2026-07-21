@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { getResend, BOOKING_FROM_EMAIL, TUTOR_NOTIFY_EMAIL } from "@/lib/resend";
+import { getLessonType, LessonTypeId } from "@/lib/pricing";
+
+function lessonLabelFor(metadata: Stripe.Metadata): string {
+  try {
+    return getLessonType(metadata.lesson_type as LessonTypeId).label;
+  } catch {
+    return "Lesson";
+  }
+}
 
 function lessonListHtml(slotsSummary: string): string {
   const items = slotsSummary
@@ -15,8 +24,8 @@ function lessonListHtml(slotsSummary: string): string {
 
 async function sendCustomerEmail(session: Stripe.Checkout.Session) {
   const m = session.metadata ?? {};
-  const lessonLabel = m.lesson_type === "chinese-dance" ? "Chinese Dance Lesson" : "Chinese Language Lesson";
-  const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "";
+  const lessonLabel = lessonLabelFor(m);
+  const amount = session.amount_total ? `£${(session.amount_total / 100).toFixed(2)}` : "";
 
   await getResend().emails.send({
     from: BOOKING_FROM_EMAIL,
@@ -39,8 +48,8 @@ async function sendCustomerEmail(session: Stripe.Checkout.Session) {
 
 async function sendTutorEmail(session: Stripe.Checkout.Session) {
   const m = session.metadata ?? {};
-  const lessonLabel = m.lesson_type === "chinese-dance" ? "Chinese Dance Lesson" : "Chinese Language Lesson";
-  const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "";
+  const lessonLabel = lessonLabelFor(m);
+  const amount = session.amount_total ? `£${(session.amount_total / 100).toFixed(2)}` : "";
 
   await getResend().emails.send({
     from: BOOKING_FROM_EMAIL,

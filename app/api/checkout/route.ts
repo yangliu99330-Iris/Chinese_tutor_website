@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         {
           quantity: slots.length,
           price_data: {
-            currency: "usd",
+            currency: "gbp",
             unit_amount: lesson.priceCents,
             product_data: {
               name: lesson.label,
