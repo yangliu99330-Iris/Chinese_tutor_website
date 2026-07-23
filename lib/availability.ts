@@ -22,17 +22,11 @@ export const BUSINESS_HOURS: Record<number, { start: string; end: string } | nul
 export const SLOT_INTERVAL_MINUTES = 15;
 export const BOOKING_WINDOW_DAYS = 45;
 export const MIN_NOTICE_HOURS = 12;
-
-// Fully closed dates (holidays, time off), format yyyy-mm-dd.
-export const BLOCKED_DATES: string[] = [];
-
-// Demo data representing lessons already booked by other students.
-export const BOOKED_SLOTS: SlotSelection[] = [
-  { date: "2026-07-08", time: "10:00" },
-  { date: "2026-07-08", time: "14:00" },
-  { date: "2026-07-10", time: "16:00" },
-];
 // ─────────────────────────────────────────────────────────────────────────
+
+// Real bookings and admin-blocked slots now live in Postgres (see lib/db.ts).
+// Everything below is pure — callers pass in which dates/slots are excluded
+// so this file has no direct DB dependency and can run on client or server.
 
 export function toDateKey(date: Date): string {
   const y = date.getFullYear();
@@ -46,12 +40,12 @@ export function parseDateKey(dateKey: string): Date {
   return new Date(y, m - 1, d);
 }
 
-function timeToMinutes(time: string): number {
+export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
 
-function minutesToTime(mins: number): string {
+export function minutesToTime(mins: number): string {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
@@ -72,25 +66,36 @@ function isWithinBookingWindow(date: Date): boolean {
   return date >= startOfToday && date <= maxDate;
 }
 
-export function isDateBookable(date: Date): boolean {
+export function isDateBookable(date: Date, fullyBlockedDates: Set<string>): boolean {
   const dateKey = toDateKey(date);
-  if (BLOCKED_DATES.includes(dateKey)) return false;
+  if (fullyBlockedDates.has(dateKey)) return false;
   if (!isWithinBookingWindow(date)) return false;
   return BUSINESS_HOURS[date.getDay()] !== null;
 }
 
+export interface ExcludedSlots {
+  /** dateKeys that are fully closed (holidays, blocked whole day) */
+  fullyBlockedDates: Set<string>;
+  /** `${date}T${time}` keys that are individually taken (booked or blocked) */
+  takenSlots: Set<string>;
+}
+
+export function slotKey(date: string, time: string): string {
+  return `${date}T${time}`;
+}
+
 /** Returns available start times (HH:mm) for a lesson of `durationMinutes` on `date`. */
-export function generateTimeSlots(date: Date, durationMinutes: number): string[] {
-  if (!isDateBookable(date)) return [];
+export function generateTimeSlots(
+  date: Date,
+  durationMinutes: number,
+  excluded: ExcludedSlots
+): string[] {
+  if (!isDateBookable(date, excluded.fullyBlockedDates)) return [];
 
   const hours = BUSINESS_HOURS[date.getDay()];
   if (!hours) return [];
 
   const dateKey = toDateKey(date);
-  const bookedTimes = new Set(
-    BOOKED_SLOTS.filter((b) => b.date === dateKey).map((b) => b.time)
-  );
-
   const startMinutes = timeToMinutes(hours.start);
   const endMinutes = timeToMinutes(hours.end);
 
@@ -105,7 +110,7 @@ export function generateTimeSlots(date: Date, durationMinutes: number): string[]
     m += SLOT_INTERVAL_MINUTES
   ) {
     const time = minutesToTime(m);
-    if (bookedTimes.has(time)) continue;
+    if (excluded.takenSlots.has(slotKey(dateKey, time))) continue;
 
     if (isToday) {
       const slotDateTime = new Date(date);
@@ -118,13 +123,22 @@ export function generateTimeSlots(date: Date, durationMinutes: number): string[]
   return slots;
 }
 
-export function hasAvailability(date: Date, durationMinutes: number): boolean {
-  return generateTimeSlots(date, durationMinutes).length > 0;
+export function hasAvailability(
+  date: Date,
+  durationMinutes: number,
+  excluded: ExcludedSlots
+): boolean {
+  return generateTimeSlots(date, durationMinutes, excluded).length > 0;
 }
 
-export function isSlotAvailable(dateKey: string, time: string, durationMinutes: number): boolean {
+export function isSlotAvailable(
+  dateKey: string,
+  time: string,
+  durationMinutes: number,
+  excluded: ExcludedSlots
+): boolean {
   const date = parseDateKey(dateKey);
-  return generateTimeSlots(date, durationMinutes).includes(time);
+  return generateTimeSlots(date, durationMinutes, excluded).includes(time);
 }
 
 /**
@@ -136,7 +150,8 @@ export function buildRecurringSlots(
   first: SlotSelection,
   frequency: RecurrenceFrequency,
   occurrences: number,
-  durationMinutes: number
+  durationMinutes: number,
+  excluded: ExcludedSlots
 ): { added: SlotSelection[]; skipped: SlotSelection[] } {
   const added: SlotSelection[] = [];
   const skipped: SlotSelection[] = [];
@@ -152,7 +167,7 @@ export function buildRecurringSlots(
     const candidateKey = toDateKey(candidate);
     const slot = { date: candidateKey, time: first.time };
 
-    if (i === 0 || isSlotAvailable(candidateKey, first.time, durationMinutes)) {
+    if (i === 0 || isSlotAvailable(candidateKey, first.time, durationMinutes, excluded)) {
       added.push(slot);
     } else {
       skipped.push(slot);

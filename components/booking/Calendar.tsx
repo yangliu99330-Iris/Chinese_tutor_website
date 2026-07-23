@@ -1,6 +1,7 @@
 "use client";
 
-import { hasAvailability, toDateKey } from "@/lib/availability";
+import { useEffect, useState } from "react";
+import { toDateKey } from "@/lib/availability";
 
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_LABELS = [
@@ -25,6 +26,24 @@ export default function Calendar({
 }: CalendarProps) {
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
+
+  const [availableDates, setAvailableDates] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAvailableDates(null);
+    fetch(`/api/availability/month?year=${year}&month=${month}&duration=${durationMinutes}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setAvailableDates(new Set(data.availableDates ?? []));
+      })
+      .catch(() => {
+        if (!cancelled) setAvailableDates(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [year, month, durationMinutes]);
 
   const firstOfMonth = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -81,18 +100,19 @@ export default function Calendar({
 
           const dateKey = toDateKey(date);
           const isPast = dateKey < todayKey;
-          const available = !isPast && hasAvailability(date, durationMinutes);
+          const available = !isPast && (availableDates?.has(dateKey) ?? false);
           const isSelected = dateKey === selectedDate;
           const isToday = dateKey === todayKey;
+          const isLoading = availableDates === null;
 
           return (
             <button
               key={dateKey}
               type="button"
-              disabled={!available}
+              disabled={!available || isLoading}
               onClick={() => onSelectDate(dateKey)}
               className={`aspect-square rounded-lg text-sm font-medium transition-colors relative
-                ${isSelected ? "text-white" : available ? "text-gray-800 hover:bg-gray-100" : "text-gray-300 cursor-not-allowed"}
+                ${isSelected ? "text-white" : available && !isLoading ? "text-gray-800 hover:bg-gray-100" : "text-gray-300 cursor-not-allowed"}
               `}
               style={isSelected ? { backgroundColor: "#B668BD" } : undefined}
             >

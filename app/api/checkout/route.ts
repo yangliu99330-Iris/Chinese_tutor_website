@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
 import { formatTimeLabel, isSlotAvailable, parseDateKey, SlotSelection } from "@/lib/availability";
+import { getExcludedSlots } from "@/lib/db";
 
 interface CheckoutRequestBody {
   lessonType: LessonTypeId;
@@ -27,9 +28,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid lesson type." }, { status: 400 });
   }
 
+  const dates = slots.map((s) => s.date).filter(Boolean).sort();
+  const excluded = await getExcludedSlots(dates[0], dates[dates.length - 1]);
+
   const invalidSlot = slots.find(
     (slot) =>
-      !slot?.date || !slot?.time || !isSlotAvailable(slot.date, slot.time, lesson.durationMinutes)
+      !slot?.date ||
+      !slot?.time ||
+      !isSlotAvailable(slot.date, slot.time, lesson.durationMinutes, excluded)
   );
   if (invalidSlot) {
     return NextResponse.json(
@@ -45,6 +51,8 @@ export async function POST(req: NextRequest) {
     )
     .join("; ")
     .slice(0, 480);
+
+  const slotsJson = JSON.stringify(slots).slice(0, 490);
 
   const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 
@@ -72,6 +80,7 @@ export async function POST(req: NextRequest) {
         customer_phone: customer.phone,
         notes: (customer.notes ?? "").slice(0, 480),
         slots_summary: slotsSummary,
+        slots_json: slotsJson,
         slot_count: String(slots.length),
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,

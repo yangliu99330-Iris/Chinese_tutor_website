@@ -6,7 +6,7 @@ import TimeSlotGrid from "./TimeSlotGrid";
 import SlotActionModal from "./SlotActionModal";
 import SelectionSummary from "./SelectionSummary";
 import CheckoutForm from "./CheckoutForm";
-import { buildRecurringSlots, RecurrenceFrequency, SlotSelection } from "@/lib/availability";
+import { RecurrenceFrequency, SlotSelection } from "@/lib/availability";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
 
 type Step = "time" | "checkout";
@@ -48,16 +48,23 @@ export default function BookingFlow() {
     setActiveSlot(null);
   }
 
-  function handleSelectRecurring(frequency: RecurrenceFrequency, occurrences: number) {
+  async function handleSelectRecurring(frequency: RecurrenceFrequency, occurrences: number) {
     if (!activeSlot) return;
-    const { added, skipped } = buildRecurringSlots(activeSlot, frequency, occurrences, durationMinutes);
-    setSelectedSlots((prev) => [...prev, ...added]);
+    setActiveSlot(null);
+
+    const res = await fetch("/api/availability/recurring", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...activeSlot, frequency, occurrences, duration: durationMinutes }),
+    });
+    const { added, skipped } = await res.json();
+
+    setSelectedSlots((prev) => [...prev, ...(added ?? [])]);
     setSkippedNotice(
-      skipped.length > 0
+      skipped?.length > 0
         ? `${skipped.length} of ${occurrences} recurring lessons landed on unavailable times and were skipped. You can add those manually.`
         : null
     );
-    setActiveSlot(null);
   }
 
   if (step === "checkout") {

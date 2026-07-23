@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { getResend, BOOKING_FROM_EMAIL, TUTOR_NOTIFY_EMAIL } from "@/lib/resend";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
+import { createBookings } from "@/lib/db";
+import { SlotSelection } from "@/lib/availability";
 
 function lessonLabelFor(metadata: Stripe.Metadata): string {
   try {
@@ -20,6 +22,35 @@ function lessonListHtml(slotsSummary: string): string {
   return `<ul style="padding-left:20px;margin:8px 0;">${items
     .map((i) => `<li style="margin:4px 0;">${i}</li>`)
     .join("")}</ul>`;
+}
+
+async function persistBooking(session: Stripe.Checkout.Session) {
+  const m = session.metadata ?? {};
+  const lesson = getLessonType(m.lesson_type as LessonTypeId);
+
+  let slots: SlotSelection[] = [];
+  try {
+    slots = JSON.parse(m.slots_json ?? "[]");
+  } catch {
+    slots = [];
+  }
+  if (slots.length === 0) return;
+
+  const amountPaidPerSlotCents = session.amount_total
+    ? Math.round(session.amount_total / slots.length)
+    : lesson.priceCents;
+
+  await createBookings({
+    stripeSessionId: session.id,
+    lessonType: lesson.id,
+    slots,
+    durationMinutes: lesson.durationMinutes,
+    customerName: m.customer_name ?? "",
+    customerEmail: session.customer_email ?? "",
+    customerPhone: m.customer_phone ?? "",
+    notes: m.notes ?? "",
+    amountPaidPerSlotCents,
+  });
 }
 
 async function sendCustomerEmail(session: Stripe.Checkout.Session) {
@@ -90,6 +121,12 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    try {
+      await persistBooking(session);
+    } catch (err) {
+      console.error("Failed to persist booking:", err);
+      return NextResponse.json({ error: "Booking save failed." }, { status: 500 });
+    }
     try {
       await Promise.all([sendCustomerEmail(session), sendTutorEmail(session)]);
     } catch (err) {

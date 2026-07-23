@@ -1,6 +1,7 @@
 "use client";
 
-import { formatTimeLabel, generateTimeSlots, parseDateKey } from "@/lib/availability";
+import { useEffect, useState } from "react";
+import { formatTimeLabel } from "@/lib/availability";
 
 interface TimeSlotGridProps {
   dateKey: string;
@@ -15,8 +16,27 @@ export default function TimeSlotGrid({
   selectedTimesForDate,
   onPickTime,
 }: TimeSlotGridProps) {
-  const date = parseDateKey(dateKey);
-  const slots = generateTimeSlots(date, durationMinutes);
+  const [slots, setSlots] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSlots(null);
+    fetch(`/api/availability/day?date=${dateKey}&duration=${durationMinutes}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setSlots(data.times ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setSlots([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dateKey, durationMinutes]);
+
+  if (slots === null) {
+    return <p className="text-sm text-gray-400 text-center py-10">Loading times…</p>;
+  }
 
   if (slots.length === 0) {
     return (
