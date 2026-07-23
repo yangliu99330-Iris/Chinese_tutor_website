@@ -23,12 +23,17 @@ export interface BlockedSlotRecord {
   reason: string | null;
 }
 
+// Postgres DATE columns come back from @vercel/postgres as JS Date objects
+// (serialized to full ISO timestamps by JSON.stringify), not plain
+// "YYYY-MM-DD" strings. Casting to ::text in every query below keeps dates
+// as plain strings all the way through, matching what lib/availability.ts expects.
+
 export async function getBookedSlotsInRange(
   startDate: string,
   endDate: string
 ): Promise<SlotSelection[]> {
   const { rows } = await sql<{ lesson_date: string; lesson_time: string }>`
-    SELECT lesson_date, lesson_time FROM bookings
+    SELECT lesson_date::text, lesson_time FROM bookings
     WHERE status = 'confirmed'
       AND lesson_date >= ${startDate}
       AND lesson_date <= ${endDate}
@@ -41,7 +46,7 @@ export async function getBlockedSlotsInRange(
   endDate: string
 ): Promise<{ date: string; time: string | null }[]> {
   const { rows } = await sql<{ blocked_date: string; blocked_time: string | null }>`
-    SELECT blocked_date, blocked_time FROM blocked_slots
+    SELECT blocked_date::text, blocked_time FROM blocked_slots
     WHERE blocked_date >= ${startDate} AND blocked_date <= ${endDate}
   `;
   return rows.map((r) => ({ date: r.blocked_date, time: r.blocked_time }));
@@ -79,7 +84,7 @@ export async function getBookingsInRange(
   endDate: string
 ): Promise<BookingRecord[]> {
   const { rows } = await sql`
-    SELECT id, stripe_session_id, lesson_type, lesson_date, lesson_time, duration_minutes,
+    SELECT id, stripe_session_id, lesson_type, lesson_date::text, lesson_time, duration_minutes,
            customer_name, customer_email, customer_phone, notes, amount_paid_cents, status
     FROM bookings
     WHERE lesson_date >= ${startDate} AND lesson_date <= ${endDate}
@@ -106,7 +111,7 @@ export async function getBlockedSlotsList(
   endDate: string
 ): Promise<BlockedSlotRecord[]> {
   const { rows } = await sql`
-    SELECT id, blocked_date, blocked_time, reason FROM blocked_slots
+    SELECT id, blocked_date::text, blocked_time, reason FROM blocked_slots
     WHERE blocked_date >= ${startDate} AND blocked_date <= ${endDate}
     ORDER BY blocked_date, blocked_time
   `;
