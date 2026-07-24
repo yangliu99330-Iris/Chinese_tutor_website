@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const stats = [
   { value: "200+", label: "Students Taught" },
-  { value: "6+", label: "Years Experience" },
-  { value: "4.9★", label: "Average Rating" },
-  { value: "98%", label: "Recommend Rate" },
+  { value: "12+", label: "Years Experience" },
+  { value: "5.0★", label: "Average Rating" },
+  { value: "100%", label: "5-Star Reviews" },
 ];
 
 const features = [
@@ -49,24 +49,26 @@ const programs = [
   },
 ];
 
+// Real reviews from Miss Yang's italki and Preply tutor profiles (paraphrased,
+// not verbatim). See /testimonials for the full list and source links.
 const testimonials = [
   {
-    name: "Sarah M.",
-    role: "Beginner Mandarin Student",
+    name: "Will",
+    role: "47 Lessons · via italki",
     quote:
-      "Learning Mandarin with Miss Yang has been the best decision I've made. Her patience and structured approach made the tones click in just weeks!",
+      "Her teaching method is highly effective. I'd strongly recommend her to anyone serious about learning Chinese.",
   },
   {
-    name: "David L.",
-    role: "HSK 3 Candidate",
+    name: "魏冬袅",
+    role: "43 Lessons · via italki",
     quote:
-      "I went from zero Chinese to passing HSK 3 in eight months. Miss Yang's enthusiasm and systematic teaching is truly unmatched.",
+      "Her lessons are so well organized — especially helpful as a beginner. I've progressed faster than I ever did studying on my own.",
   },
   {
-    name: "Jennifer K.",
-    role: "Parent",
+    name: "Juan",
+    role: "18 Lessons · via italki",
     quote:
-      "My daughter's confidence in dance has blossomed beautifully. She now performs traditional Chinese dances with real grace and joy.",
+      "Miss Yang is incredibly engaged — she quickly figures out exactly what you need and keeps lessons sharp and fun with her sense of humor.",
   },
 ];
 
