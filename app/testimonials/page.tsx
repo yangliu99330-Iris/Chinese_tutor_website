@@ -154,6 +154,36 @@ export default function Testimonials() {
         </div>
       </section>
 
+      {/* ── Video ── */}
+      <section className="section-padding bg-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#B668BD" }}>
+            See Miss Yang Teach
+          </p>
+          <h2 className="font-playfair text-3xl font-bold text-gray-900 mb-8">
+            Watch a Lesson in Action
+          </h2>
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-lg border" style={{ borderColor: "#F8ECE1" }}>
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/vGdOw9P-aK8"
+              title="12 Chinese Slang You Must Know | Miss Yang"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+          <a
+            href="https://www.youtube.com/@ChineseTutorYang/featured"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 text-sm underline"
+            style={{ color: "#B668BD" }}
+          >
+            More videos on YouTube →
+          </a>
+        </div>
+      </section>
+
       {/* ── Testimonials Grid ── */}
       <section className="section-padding" style={{ backgroundColor: "#FCFCFC" }}>
         <div className="max-w-7xl mx-auto">
