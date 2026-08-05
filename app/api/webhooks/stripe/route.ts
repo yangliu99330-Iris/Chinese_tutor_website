@@ -121,17 +121,23 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    try {
-      await persistBooking(session);
-    } catch (err) {
-      console.error("Failed to persist booking:", err);
-      return NextResponse.json({ error: "Booking save failed." }, { status: 500 });
+
+    // Persisting the booking and sending emails are independent — a failure
+    // in one must not prevent the other from running.
+    const [persistResult, emailResult] = await Promise.allSettled([
+      persistBooking(session),
+      Promise.all([sendCustomerEmail(session), sendTutorEmail(session)]),
+    ]);
+
+    if (persistResult.status === "rejected") {
+      console.error("Failed to persist booking:", persistResult.reason);
     }
-    try {
-      await Promise.all([sendCustomerEmail(session), sendTutorEmail(session)]);
-    } catch (err) {
-      console.error("Failed to send booking confirmation emails:", err);
-      return NextResponse.json({ error: "Email send failed." }, { status: 500 });
+    if (emailResult.status === "rejected") {
+      console.error("Failed to send booking confirmation emails:", emailResult.reason);
+    }
+
+    if (persistResult.status === "rejected" || emailResult.status === "rejected") {
+      return NextResponse.json({ error: "Partial failure — see logs." }, { status: 500 });
     }
   }
 
