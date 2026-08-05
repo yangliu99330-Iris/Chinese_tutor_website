@@ -14,6 +14,12 @@ function lessonLabelFor(metadata: Stripe.Metadata): string {
   }
 }
 
+function customerEmailFor(session: Stripe.Checkout.Session): string {
+  // After checkout completes, Stripe often moves the actual submitted email
+  // to customer_details.email and leaves customer_email null.
+  return session.customer_details?.email ?? session.customer_email ?? "";
+}
+
 function lessonListHtml(slotsSummary: string): string {
   const items = slotsSummary
     .split(";")
@@ -46,7 +52,7 @@ async function persistBooking(session: Stripe.Checkout.Session) {
     slots,
     durationMinutes: lesson.durationMinutes,
     customerName: m.customer_name ?? "",
-    customerEmail: session.customer_email ?? "",
+    customerEmail: customerEmailFor(session),
     customerPhone: m.customer_phone ?? "",
     notes: m.notes ?? "",
     amountPaidPerSlotCents,
@@ -60,7 +66,7 @@ async function sendCustomerEmail(session: Stripe.Checkout.Session) {
 
   await getResend().emails.send({
     from: BOOKING_FROM_EMAIL,
-    to: session.customer_email ?? "",
+    to: customerEmailFor(session),
     subject: "Your lesson booking is confirmed!",
     html: `
       <div style="font-family:sans-serif;color:#1f2937;max-width:520px;margin:0 auto;">
@@ -90,7 +96,7 @@ async function sendTutorEmail(session: Stripe.Checkout.Session) {
       <div style="font-family:sans-serif;color:#1f2937;max-width:520px;margin:0 auto;">
         <h2 style="color:#B668BD;">New Lesson Booking</h2>
         <p><strong>Student:</strong> ${m.customer_name ?? ""}</p>
-        <p><strong>Email:</strong> ${session.customer_email ?? ""}</p>
+        <p><strong>Email:</strong> ${customerEmailFor(session)}</p>
         <p><strong>Phone:</strong> ${m.customer_phone ?? ""}</p>
         ${m.notes ? `<p><strong>Notes:</strong> ${m.notes}</p>` : ""}
         <p><strong>${lessonLabel}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"})</p>
