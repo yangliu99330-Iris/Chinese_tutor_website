@@ -7,7 +7,7 @@ import { getExcludedSlots } from "@/lib/db";
 interface CheckoutRequestBody {
   lessonType: LessonTypeId;
   slots: SlotSelection[];
-  customer: { name: string; email: string; phone: string; notes?: string };
+  customer: { name: string; email: string; phone: string; notes?: string; timezone?: string };
 }
 
 export async function POST(req: NextRequest) {
@@ -54,6 +54,16 @@ export async function POST(req: NextRequest) {
 
   const slotsJson = JSON.stringify(slots).slice(0, 490);
 
+  let customerTimezone = "Europe/London";
+  if (customer.timezone) {
+    try {
+      new Intl.DateTimeFormat(undefined, { timeZone: customer.timezone });
+      customerTimezone = customer.timezone;
+    } catch {
+      // Invalid/unrecognized timezone string — fall back to UK time.
+    }
+  }
+
   const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 
   try {
@@ -82,6 +92,7 @@ export async function POST(req: NextRequest) {
         slots_summary: slotsSummary,
         slots_json: slotsJson,
         slot_count: String(slots.length),
+        customer_timezone: customerTimezone,
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/booking`,

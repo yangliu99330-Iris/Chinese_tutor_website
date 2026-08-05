@@ -27,10 +27,11 @@ export default function CheckoutForm({ lessonType, slots, onBack }: CheckoutForm
     setError(null);
 
     try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessonType, slots, customer: { name, email, phone, notes } }),
+        body: JSON.stringify({ lessonType, slots, customer: { name, email, phone, notes, timezone } }),
       });
 
       const data = await res.json();
