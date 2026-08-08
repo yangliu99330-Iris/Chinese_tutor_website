@@ -1,6 +1,6 @@
 "use client";
 
-import { formatTimeLabel, parseDateKey, SlotSelection } from "@/lib/availability";
+import { formatTimeLabel, minutesToTime, parseDateKey, SlotSelection, timeToMinutes } from "@/lib/availability";
 import { formatPrice, LESSON_TYPES, LessonTypeId } from "@/lib/pricing";
 
 interface SelectionSummaryProps {
@@ -73,7 +73,8 @@ export default function SelectionSummary({
                   month: "short",
                   day: "numeric",
                 })}{" "}
-                · {formatTimeLabel(slot.time)}
+                · {formatTimeLabel(slot.time)}–
+                {formatTimeLabel(minutesToTime(timeToMinutes(slot.time) + lesson.durationMinutes))}
               </span>
               <button
                 type="button"

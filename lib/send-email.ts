@@ -1,17 +1,24 @@
 import Stripe from "stripe";
 import { DateTime } from "luxon";
 import { getResend, BOOKING_FROM_EMAIL, TUTOR_NOTIFY_EMAIL } from "@/lib/resend";
-import { getLessonType, LessonTypeId } from "@/lib/pricing";
+import { getLessonType, LessonType, LessonTypeId } from "@/lib/pricing";
 import { claimBookingEmail, releaseBookingEmailClaim } from "@/lib/db";
 import { SlotSelection } from "@/lib/availability";
 
 const TUTOR_ZONE = "Europe/London";
+const FALLBACK_LESSON: LessonType = {
+  id: "private",
+  label: "Lesson",
+  priceCents: 0,
+  durationMinutes: 60,
+  description: "",
+};
 
-function lessonLabelFor(metadata: Stripe.Metadata): string {
+function lessonFor(metadata: Stripe.Metadata): LessonType {
   try {
-    return getLessonType(metadata.lesson_type as LessonTypeId).label;
+    return getLessonType(metadata.lesson_type as LessonTypeId);
   } catch {
-    return "Lesson";
+    return FALLBACK_LESSON;
   }
 }
 
@@ -32,9 +39,10 @@ function parseSlots(metadata: Stripe.Metadata): SlotSelection[] {
 /**
  * Slot dates/times are stored as wall-clock time in the tutor's own timezone
  * (Europe/London). This converts each slot into `zone` and renders a label
- * that includes the zone name, so the reader always knows whose time it is.
+ * that includes the zone name and the full start–end range, so the reader
+ * always knows whose time it is and how long the lesson actually runs.
  */
-function formatSlotsInZone(slots: SlotSelection[], zone: string): string {
+function formatSlotsInZone(slots: SlotSelection[], durationMinutes: number, zone: string): string {
   const zoneLabel = zone === TUTOR_ZONE ? "UK time" : zone.replace(/_/g, " ");
 
   const items = slots.map((s) => {
@@ -44,10 +52,15 @@ function formatSlotsInZone(slots: SlotSelection[], zone: string): string {
       { year, month, day, hour, minute },
       { zone: TUTOR_ZONE }
     );
-    const converted = asLondonTime.isValid ? asLondonTime.setZone(zone) : null;
-    return converted?.isValid
-      ? converted.toFormat(`ccc, LLL d, yyyy 'at' h:mm a`)
-      : `${s.date} ${s.time}`;
+    if (!asLondonTime.isValid) return `${s.date} ${s.time}`;
+
+    const start = asLondonTime.setZone(zone);
+    const end = start.plus({ minutes: durationMinutes });
+    if (!start.isValid || !end.isValid) return `${s.date} ${s.time}`;
+
+    const startStr = start.toFormat(`ccc, LLL d, yyyy 'at' h:mm a`);
+    const endStr = start.hasSame(end, "day") ? end.toFormat("h:mm a") : end.toFormat(`ccc, LLL d, yyyy 'at' h:mm a`);
+    return `${startStr} – ${endStr}`;
   });
 
   return `
@@ -60,7 +73,7 @@ function formatSlotsInZone(slots: SlotSelection[], zone: string): string {
 
 async function sendCustomerEmail(session: Stripe.Checkout.Session) {
   const m = session.metadata ?? {};
-  const lessonLabel = lessonLabelFor(m);
+  const lesson = lessonFor(m);
   const amount = session.amount_total ? `£${(session.amount_total / 100).toFixed(2)}` : "";
   const slots = parseSlots(m);
   const customerZone = m.customer_timezone || TUTOR_ZONE;
@@ -74,8 +87,8 @@ async function sendCustomerEmail(session: Stripe.Checkout.Session) {
         <h2 style="color:#B668BD;">Booking Confirmed</h2>
         <p>Hi ${m.customer_name ?? ""},</p>
         <p>Thanks for booking with Chinese Tutor Yang! Here are your lesson details:</p>
-        <p><strong>${lessonLabel}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"})</p>
-        ${formatSlotsInZone(slots, customerZone)}
+        <p><strong>${lesson.label}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"}, ${lesson.durationMinutes} min each)</p>
+        ${formatSlotsInZone(slots, lesson.durationMinutes, customerZone)}
         <p><strong>Total paid:</strong> ${amount}</p>
         <p>Miss Yang will reach out if any details need confirming. If you have questions, just reply to this email or reach chinesetutoryang@gmail.com.</p>
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">学无止境 — Learning Has No Limits</p>
@@ -86,14 +99,14 @@ async function sendCustomerEmail(session: Stripe.Checkout.Session) {
 
 async function sendTutorEmail(session: Stripe.Checkout.Session) {
   const m = session.metadata ?? {};
-  const lessonLabel = lessonLabelFor(m);
+  const lesson = lessonFor(m);
   const amount = session.amount_total ? `£${(session.amount_total / 100).toFixed(2)}` : "";
   const slots = parseSlots(m);
 
   await getResend().emails.send({
     from: BOOKING_FROM_EMAIL,
     to: TUTOR_NOTIFY_EMAIL,
-    subject: `New booking: ${m.customer_name ?? "a student"} (${lessonLabel})`,
+    subject: `New booking: ${m.customer_name ?? "a student"} (${lesson.label})`,
     html: `
       <div style="font-family:sans-serif;color:#1f2937;max-width:520px;margin:0 auto;">
         <h2 style="color:#B668BD;">New Lesson Booking</h2>
@@ -101,8 +114,8 @@ async function sendTutorEmail(session: Stripe.Checkout.Session) {
         <p><strong>Email:</strong> ${customerEmailFor(session)}</p>
         <p><strong>Phone:</strong> ${m.customer_phone ?? ""}</p>
         ${m.notes ? `<p><strong>Notes:</strong> ${m.notes}</p>` : ""}
-        <p><strong>${lessonLabel}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"})</p>
-        ${formatSlotsInZone(slots, TUTOR_ZONE)}
+        <p><strong>${lesson.label}</strong> (${m.slot_count ?? ""} lesson${m.slot_count === "1" ? "" : "s"}, ${lesson.durationMinutes} min each)</p>
+        ${formatSlotsInZone(slots, lesson.durationMinutes, TUTOR_ZONE)}
         <p><strong>Amount paid:</strong> ${amount}</p>
       </div>
     `,

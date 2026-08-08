@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatTimeLabel, parseDateKey, SlotSelection } from "@/lib/availability";
+import { formatTimeLabel, minutesToTime, parseDateKey, SlotSelection, timeToMinutes } from "@/lib/availability";
 import { formatPrice, getLessonType, LessonTypeId } from "@/lib/pricing";
 
 interface CheckoutFormProps {
@@ -152,7 +152,8 @@ export default function CheckoutForm({ lessonType, slots, onBack }: CheckoutForm
                 month: "short",
                 day: "numeric",
               })}{" "}
-              · {formatTimeLabel(slot.time)}
+              · {formatTimeLabel(slot.time)}–
+              {formatTimeLabel(minutesToTime(timeToMinutes(slot.time) + lesson.durationMinutes))}
             </li>
           ))}
         </ul>

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
-import { formatTimeLabel, isSlotAvailable, parseDateKey, SlotSelection } from "@/lib/availability";
+import {
+  formatTimeLabel,
+  isSlotAvailable,
+  minutesToTime,
+  parseDateKey,
+  SlotSelection,
+  timeToMinutes,
+} from "@/lib/availability";
 import { getExcludedSlots } from "@/lib/db";
 
 interface CheckoutRequestBody {
@@ -45,10 +52,11 @@ export async function POST(req: NextRequest) {
   }
 
   const slotsSummary = slots
-    .map(
-      (s) =>
-        `${parseDateKey(s.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${formatTimeLabel(s.time)}`
-    )
+    .map((s) => {
+      const dateLabel = parseDateKey(s.date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const endTime = minutesToTime(timeToMinutes(s.time) + lesson.durationMinutes);
+      return `${dateLabel} ${formatTimeLabel(s.time)}–${formatTimeLabel(endTime)}`;
+    })
     .join("; ")
     .slice(0, 480);
 

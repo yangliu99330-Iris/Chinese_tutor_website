@@ -73,15 +73,21 @@ export function isDateBookable(date: Date, fullyBlockedDates: Set<string>): bool
   return BUSINESS_HOURS[date.getDay()] !== null;
 }
 
+export interface OccupiedRange {
+  startMinutes: number;
+  /** exclusive */
+  endMinutes: number;
+}
+
 export interface ExcludedSlots {
   /** dateKeys that are fully closed (holidays, blocked whole day) */
   fullyBlockedDates: Set<string>;
-  /** `${date}T${time}` keys that are individually taken (booked or blocked) */
-  takenSlots: Set<string>;
+  /** dateKey -> minute ranges already occupied that day (bookings' full duration, or admin blocks) */
+  occupiedRanges: Map<string, OccupiedRange[]>;
 }
 
-export function slotKey(date: string, time: string): string {
-  return `${date}T${time}`;
+function rangesOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
+  return aStart < bEnd && bStart < aEnd;
 }
 
 /** Returns available start times (HH:mm) for a lesson of `durationMinutes` on `date`. */
@@ -96,6 +102,7 @@ export function generateTimeSlots(
   if (!hours) return [];
 
   const dateKey = toDateKey(date);
+  const dayRanges = excluded.occupiedRanges.get(dateKey) ?? [];
   const startMinutes = timeToMinutes(hours.start);
   const endMinutes = timeToMinutes(hours.end);
 
@@ -109,8 +116,11 @@ export function generateTimeSlots(
     m + durationMinutes <= endMinutes;
     m += SLOT_INTERVAL_MINUTES
   ) {
-    const time = minutesToTime(m);
-    if (excluded.takenSlots.has(slotKey(dateKey, time))) continue;
+    const candidateEnd = m + durationMinutes;
+    const overlapsExisting = dayRanges.some((r) =>
+      rangesOverlap(m, candidateEnd, r.startMinutes, r.endMinutes)
+    );
+    if (overlapsExisting) continue;
 
     if (isToday) {
       const slotDateTime = new Date(date);
@@ -118,7 +128,7 @@ export function generateTimeSlots(
       if (slotDateTime < earliestAllowed) continue;
     }
 
-    slots.push(time);
+    slots.push(minutesToTime(m));
   }
   return slots;
 }

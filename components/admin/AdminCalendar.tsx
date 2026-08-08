@@ -91,8 +91,24 @@ export default function AdminCalendar() {
     refresh();
   }, [refresh]);
 
-  const bookingMap = new Map<string, BookingRecord>();
-  for (const b of bookings) bookingMap.set(`${b.date}T${b.time}`, b);
+  // Bookings occupy their full duration, not just their starting 15-min row —
+  // group them per day so every row within [start, end) renders as booked.
+  const bookingsByDay = new Map<string, BookingRecord[]>();
+  for (const b of bookings) {
+    const list = bookingsByDay.get(b.date) ?? [];
+    list.push(b);
+    bookingsByDay.set(b.date, list);
+  }
+
+  function bookingAt(dateKey: string, time: string): { booking: BookingRecord; isStart: boolean } | null {
+    const m = timeToMinutes(time);
+    for (const b of bookingsByDay.get(dateKey) ?? []) {
+      const start = timeToMinutes(b.time);
+      const end = start + b.durationMinutes;
+      if (m >= start && m < end) return { booking: b, isStart: m === start };
+    }
+    return null;
+  }
 
   const blockedTimeMap = new Map<string, BlockedSlotRecord>();
   const fullyBlockedDates = new Set<string>();
@@ -189,7 +205,7 @@ export default function AdminCalendar() {
               {weekDays.map((d) => {
                 const dateKey = toDateKey(d);
                 const key = `${dateKey}T${time}`;
-                const booking = bookingMap.get(key);
+                const bookingHit = bookingAt(dateKey, time);
                 const blocked = blockedTimeMap.get(key);
                 const dayFullyBlocked = fullyBlockedDates.has(dateKey);
 
@@ -197,14 +213,17 @@ export default function AdminCalendar() {
                 let cellStyle: React.CSSProperties = {};
                 let onClick: (() => void) | undefined;
 
-                if (booking) {
-                  cellStyle = { backgroundColor: "#B668BD" };
-                  content = (
+                if (bookingHit) {
+                  cellStyle = {
+                    backgroundColor: "#B668BD",
+                    borderTop: bookingHit.isStart ? undefined : "1px solid rgba(255,255,255,0.35)",
+                  };
+                  content = bookingHit.isStart ? (
                     <span className="text-white text-[10px] leading-tight px-1 block truncate">
-                      {booking.customerName}
+                      {bookingHit.booking.customerName}
                     </span>
-                  );
-                  onClick = () => setActiveBooking(booking);
+                  ) : null;
+                  onClick = () => setActiveBooking(bookingHit.booking);
                 } else if (blocked || dayFullyBlocked) {
                   cellStyle = { backgroundColor: "#e5e7eb" };
                   if (blocked) {
@@ -219,7 +238,7 @@ export default function AdminCalendar() {
                   <button
                     key={key}
                     type="button"
-                    disabled={loading || dayFullyBlocked || (!booking && !blocked && loading)}
+                    disabled={loading || dayFullyBlocked}
                     onClick={onClick}
                     className="border-b border-r h-7 hover:bg-gray-50 transition-colors flex items-center justify-center"
                     style={{ borderColor: "#F8ECE1", ...cellStyle }}
@@ -243,7 +262,8 @@ export default function AdminCalendar() {
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#B668BD" }}>
-              {activeBooking.date} · {formatTimeLabel(activeBooking.time)}
+              {activeBooking.date} · {formatTimeLabel(activeBooking.time)}–
+              {formatTimeLabel(minutesToTime(timeToMinutes(activeBooking.time) + activeBooking.durationMinutes))}
             </p>
             <h3 className="font-playfair text-xl font-bold text-gray-900 mb-4">
               {activeBooking.customerName}

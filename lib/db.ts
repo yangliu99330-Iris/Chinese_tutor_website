@@ -1,5 +1,5 @@
 import { sql } from "@vercel/postgres";
-import { ExcludedSlots, slotKey, SlotSelection } from "./availability";
+import { ExcludedSlots, OccupiedRange, SLOT_INTERVAL_MINUTES, SlotSelection, timeToMinutes } from "./availability";
 
 export interface BookingRecord {
   id: number;
@@ -31,14 +31,14 @@ export interface BlockedSlotRecord {
 export async function getBookedSlotsInRange(
   startDate: string,
   endDate: string
-): Promise<SlotSelection[]> {
-  const { rows } = await sql<{ lesson_date: string; lesson_time: string }>`
-    SELECT lesson_date::text, lesson_time FROM bookings
+): Promise<(SlotSelection & { durationMinutes: number })[]> {
+  const { rows } = await sql<{ lesson_date: string; lesson_time: string; duration_minutes: number }>`
+    SELECT lesson_date::text, lesson_time, duration_minutes FROM bookings
     WHERE status = 'confirmed'
       AND lesson_date >= ${startDate}
       AND lesson_date <= ${endDate}
   `;
-  return rows.map((r) => ({ date: r.lesson_date, time: r.lesson_time }));
+  return rows.map((r) => ({ date: r.lesson_date, time: r.lesson_time, durationMinutes: r.duration_minutes }));
 }
 
 export async function getBlockedSlotsInRange(
@@ -131,16 +131,30 @@ export async function getExcludedSlots(startDate: string, endDate: string): Prom
   ]);
 
   const fullyBlockedDates = new Set<string>();
-  const takenSlots = new Set<string>();
+  const occupiedRanges = new Map<string, OccupiedRange[]>();
 
-  for (const b of booked) takenSlots.add(slotKey(b.date, b.time));
-
-  for (const b of blocked) {
-    if (b.time === null) fullyBlockedDates.add(b.date);
-    else takenSlots.add(slotKey(b.date, b.time));
+  function addRange(date: string, startMinutes: number, endMinutes: number) {
+    const list = occupiedRanges.get(date) ?? [];
+    list.push({ startMinutes, endMinutes });
+    occupiedRanges.set(date, list);
   }
 
-  return { fullyBlockedDates, takenSlots };
+  // A booking occupies its full duration, not just its 15-minute start slot.
+  for (const b of booked) {
+    const start = timeToMinutes(b.time);
+    addRange(b.date, start, start + b.durationMinutes);
+  }
+
+  for (const b of blocked) {
+    if (b.time === null) {
+      fullyBlockedDates.add(b.date);
+    } else {
+      const start = timeToMinutes(b.time);
+      addRange(b.date, start, start + SLOT_INTERVAL_MINUTES);
+    }
+  }
+
+  return { fullyBlockedDates, occupiedRanges };
 }
 
 export async function blockSlot(date: string, time: string | null, reason: string): Promise<void> {
