@@ -33,3 +33,11 @@ CREATE TABLE IF NOT EXISTS blocked_slots (
 );
 
 CREATE INDEX IF NOT EXISTS idx_blocked_slots_date ON blocked_slots (blocked_date);
+
+-- Marks a Stripe checkout session as "confirmation emails sent" so retried
+-- or manually resent webhook deliveries never send duplicate emails.
+-- See lib/send-email.ts.
+CREATE TABLE IF NOT EXISTS booking_emails (
+  stripe_session_id TEXT PRIMARY KEY,
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

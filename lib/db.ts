@@ -150,3 +150,22 @@ export async function blockSlot(date: string, time: string | null, reason: strin
 export async function unblockSlot(id: number): Promise<void> {
   await sql`DELETE FROM blocked_slots WHERE id = ${id}`;
 }
+
+/**
+ * Atomically claims the right to send confirmation emails for a Stripe
+ * session. Returns true only for the caller that wins the race (first
+ * successful insert) — everyone else (retries, manual "Resend" clicks,
+ * concurrent deliveries) gets false and must skip sending.
+ */
+export async function claimBookingEmail(stripeSessionId: string): Promise<boolean> {
+  const { rowCount } = await sql`
+    INSERT INTO booking_emails (stripe_session_id) VALUES (${stripeSessionId})
+    ON CONFLICT (stripe_session_id) DO NOTHING
+  `;
+  return (rowCount ?? 0) > 0;
+}
+
+/** Releases a claim so a future retry can send after a failed attempt. */
+export async function releaseBookingEmailClaim(stripeSessionId: string): Promise<void> {
+  await sql`DELETE FROM booking_emails WHERE stripe_session_id = ${stripeSessionId}`;
+}
