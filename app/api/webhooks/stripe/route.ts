@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
-import { createBookings } from "@/lib/db";
+import { createBookings, cancelBookingsByPaymentIntent } from "@/lib/db";
 import { SlotSelection } from "@/lib/availability";
-import { sendBookingEmails } from "@/lib/send-email";
+import { sendBookingEmails, sendRefundCancellationEmail } from "@/lib/send-email";
 
 function customerEmailFor(session: Stripe.Checkout.Session): string {
   // After checkout completes, Stripe often moves the actual submitted email
@@ -28,8 +28,12 @@ async function persistBooking(session: Stripe.Checkout.Session) {
     ? Math.round(session.amount_total / slots.length)
     : lesson.priceCents;
 
+  const paymentIntentId =
+    typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
+
   await createBookings({
     stripeSessionId: session.id,
+    stripePaymentIntentId: paymentIntentId,
     lessonType: lesson.id,
     slots,
     durationMinutes: lesson.durationMinutes,
@@ -80,6 +84,27 @@ export async function POST(req: NextRequest) {
 
     if (persistResult.status === "rejected" || emailResult.status === "rejected") {
       return NextResponse.json({ error: "Partial failure — see logs." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+
+    // Only auto-release slots on a *full* refund. Stripe has no concept of
+    // which specific lesson a partial refund covers when one checkout
+    // session paid for several slots, so those need a manual cancel from
+    // the admin calendar instead.
+    if (charge.refunded && charge.payment_intent) {
+      const paymentIntentId =
+        typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent.id;
+
+      try {
+        const cancelled = await cancelBookingsByPaymentIntent(paymentIntentId);
+        await Promise.all(cancelled.map((booking) => sendRefundCancellationEmail(booking)));
+      } catch (err) {
+        console.error("Failed to process refund cancellation:", err);
+        return NextResponse.json({ error: "Failed to process refund." }, { status: 500 });
+      }
     }
   }
 

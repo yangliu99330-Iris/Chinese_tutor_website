@@ -22,6 +22,8 @@ export const BUSINESS_HOURS: Record<number, { start: string; end: string } | nul
 export const SLOT_INTERVAL_MINUTES = 15;
 export const BOOKING_WINDOW_DAYS = 45;
 export const MIN_NOTICE_HOURS = 12;
+/** Matches the site's advertised "free reschedule up to 24 hrs before" policy. */
+export const RESCHEDULE_MIN_NOTICE_HOURS = 24;
 // ─────────────────────────────────────────────────────────────────────────
 
 // Real bookings and admin-blocked slots now live in Postgres (see lib/db.ts).

@@ -93,8 +93,10 @@ export default function AdminCalendar() {
 
   // Bookings occupy their full duration, not just their starting 15-min row —
   // group them per day so every row within [start, end) renders as booked.
+  // Cancelled/refunded bookings are excluded here so their slot shows as open.
   const bookingsByDay = new Map<string, BookingRecord[]>();
   for (const b of bookings) {
+    if (b.status !== "confirmed") continue;
     const list = bookingsByDay.get(b.date) ?? [];
     list.push(b);
     bookingsByDay.set(b.date, list);
@@ -128,6 +130,15 @@ export default function AdminCalendar() {
 
   async function handleUnblockSlot(id: number) {
     await fetch(`/api/admin/block?id=${id}`, { method: "DELETE" });
+    refresh();
+  }
+
+  async function handleCancelBooking(id: number) {
+    if (!window.confirm("Cancel this booking? This does not process a refund — do that separately in Stripe if needed.")) {
+      return;
+    }
+    await fetch(`/api/admin/bookings/${id}/cancel`, { method: "POST" });
+    setActiveBooking(null);
     refresh();
   }
 
@@ -275,14 +286,23 @@ export default function AdminCalendar() {
               <p><strong>Paid:</strong> £{(activeBooking.amountPaidCents / 100).toFixed(2)}</p>
               {activeBooking.notes && <p><strong>Notes:</strong> {activeBooking.notes}</p>}
             </div>
-            <button
-              type="button"
-              onClick={() => setActiveBooking(null)}
-              className="w-full py-2.5 rounded-xl font-bold text-sm border-2"
-              style={{ borderColor: "#B668BD", color: "#B668BD" }}
-            >
-              Close
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveBooking(null)}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm border-2"
+                style={{ borderColor: "#B668BD", color: "#B668BD" }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCancelBooking(activeBooking.id)}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm border-2 border-red-200 text-red-500 hover:bg-red-50"
+              >
+                Cancel Booking
+              </button>
+            </div>
           </div>
         </div>
       )}

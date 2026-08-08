@@ -8,6 +8,8 @@
 CREATE TABLE IF NOT EXISTS bookings (
   id SERIAL PRIMARY KEY,
   stripe_session_id TEXT NOT NULL,
+  stripe_payment_intent_id TEXT,
+  manage_token TEXT,
   lesson_type TEXT NOT NULL,
   lesson_date DATE NOT NULL,
   lesson_time TEXT NOT NULL,
@@ -23,6 +25,15 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings (lesson_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_payment_intent ON bookings (stripe_payment_intent_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_manage_token ON bookings (manage_token);
+
+-- Run these two ALTERs (one at a time) if the `bookings` table already exists
+-- from before the cancel/reschedule/refund feature was added:
+-- ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
+-- ALTER TABLE bookings ADD COLUMN IF NOT EXISTS manage_token TEXT;
+-- CREATE INDEX IF NOT EXISTS idx_bookings_payment_intent ON bookings (stripe_payment_intent_id);
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_manage_token ON bookings (manage_token);
 
 CREATE TABLE IF NOT EXISTS blocked_slots (
   id SERIAL PRIMARY KEY,

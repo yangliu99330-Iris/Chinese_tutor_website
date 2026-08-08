@@ -1,9 +1,11 @@
 import { sql } from "@vercel/postgres";
 import { ExcludedSlots, OccupiedRange, SLOT_INTERVAL_MINUTES, SlotSelection, timeToMinutes } from "./availability";
+import { manageTokenFor } from "./manage-token";
 
 export interface BookingRecord {
   id: number;
   stripeSessionId: string;
+  manageToken: string;
   lessonType: string;
   date: string;
   time: string;
@@ -54,6 +56,7 @@ export async function getBlockedSlotsInRange(
 
 export async function createBookings(input: {
   stripeSessionId: string;
+  stripePaymentIntentId: string | null;
   lessonType: string;
   slots: SlotSelection[];
   durationMinutes: number;
@@ -64,18 +67,19 @@ export async function createBookings(input: {
   amountPaidPerSlotCents: number;
 }): Promise<void> {
   await Promise.all(
-    input.slots.map((slot) =>
-      sql`
+    input.slots.map((slot) => {
+      const manageToken = manageTokenFor(input.stripeSessionId, slot.date, slot.time);
+      return sql`
         INSERT INTO bookings (
-          stripe_session_id, lesson_type, lesson_date, lesson_time, duration_minutes,
+          stripe_session_id, stripe_payment_intent_id, manage_token, lesson_type, lesson_date, lesson_time, duration_minutes,
           customer_name, customer_email, customer_phone, notes, amount_paid_cents
         ) VALUES (
-          ${input.stripeSessionId}, ${input.lessonType}, ${slot.date}, ${slot.time}, ${input.durationMinutes},
+          ${input.stripeSessionId}, ${input.stripePaymentIntentId}, ${manageToken}, ${input.lessonType}, ${slot.date}, ${slot.time}, ${input.durationMinutes},
           ${input.customerName}, ${input.customerEmail}, ${input.customerPhone}, ${input.notes}, ${input.amountPaidPerSlotCents}
         )
         ON CONFLICT (stripe_session_id, lesson_date, lesson_time) DO NOTHING
-      `
-    )
+      `;
+    })
   );
 }
 
@@ -84,7 +88,7 @@ export async function getBookingsInRange(
   endDate: string
 ): Promise<BookingRecord[]> {
   const { rows } = await sql`
-    SELECT id, stripe_session_id, lesson_type, lesson_date::text, lesson_time, duration_minutes,
+    SELECT id, stripe_session_id, manage_token, lesson_type, lesson_date::text, lesson_time, duration_minutes,
            customer_name, customer_email, customer_phone, notes, amount_paid_cents, status
     FROM bookings
     WHERE lesson_date >= ${startDate} AND lesson_date <= ${endDate}
@@ -93,6 +97,7 @@ export async function getBookingsInRange(
   return rows.map((r) => ({
     id: r.id,
     stripeSessionId: r.stripe_session_id,
+    manageToken: r.manage_token,
     lessonType: r.lesson_type,
     date: r.lesson_date,
     time: r.lesson_time,
@@ -104,6 +109,102 @@ export async function getBookingsInRange(
     amountPaidCents: r.amount_paid_cents,
     status: r.status,
   }));
+}
+
+interface BookingRow {
+  id: number;
+  stripe_session_id: string;
+  manage_token: string;
+  lesson_type: string;
+  lesson_date: string;
+  lesson_time: string;
+  duration_minutes: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string | null;
+  notes: string | null;
+  amount_paid_cents: number;
+  status: string;
+}
+
+function mapBookingRow(r: BookingRow): BookingRecord {
+  return {
+    id: r.id,
+    stripeSessionId: r.stripe_session_id,
+    manageToken: r.manage_token,
+    lessonType: r.lesson_type,
+    date: r.lesson_date,
+    time: r.lesson_time,
+    durationMinutes: r.duration_minutes,
+    customerName: r.customer_name,
+    customerEmail: r.customer_email,
+    customerPhone: r.customer_phone,
+    notes: r.notes,
+    amountPaidCents: r.amount_paid_cents,
+    status: r.status,
+  };
+}
+
+const BOOKING_COLUMNS = `id, stripe_session_id, manage_token, lesson_type, lesson_date::text, lesson_time, duration_minutes,
+           customer_name, customer_email, customer_phone, notes, amount_paid_cents, status`;
+
+/** Looks up a single booking by its customer-facing manage link token. */
+export async function getBookingByToken(token: string): Promise<BookingRecord | null> {
+  const { rows } = await sql.query<BookingRow>(
+    `SELECT ${BOOKING_COLUMNS} FROM bookings WHERE manage_token = $1`,
+    [token]
+  );
+  return rows[0] ? mapBookingRow(rows[0]) : null;
+}
+
+/** Customer self-service cancel via their manage link. Only affects confirmed bookings. */
+export async function cancelBookingByToken(token: string): Promise<BookingRecord | null> {
+  const { rows } = await sql.query<BookingRow>(
+    `UPDATE bookings SET status = 'cancelled' WHERE manage_token = $1 AND status = 'confirmed' RETURNING ${BOOKING_COLUMNS}`,
+    [token]
+  );
+  return rows[0] ? mapBookingRow(rows[0]) : null;
+}
+
+/** Customer self-service reschedule via their manage link. Caller must validate the new slot is available first. */
+export async function rescheduleBookingByToken(
+  token: string,
+  newDate: string,
+  newTime: string
+): Promise<BookingRecord | null> {
+  const { rows } = await sql.query<BookingRow>(
+    `UPDATE bookings SET lesson_date = $2, lesson_time = $3
+     WHERE manage_token = $1 AND status = 'confirmed'
+     RETURNING ${BOOKING_COLUMNS}`,
+    [token, newDate, newTime]
+  );
+  return rows[0] ? mapBookingRow(rows[0]) : null;
+}
+
+/** Admin manual cancel (e.g. covering a partial refund the automatic webhook handler can't attribute to one slot). */
+export async function cancelBookingById(id: number): Promise<BookingRecord | null> {
+  const { rows } = await sql.query<BookingRow>(
+    `UPDATE bookings SET status = 'cancelled' WHERE id = $1 AND status = 'confirmed' RETURNING ${BOOKING_COLUMNS}`,
+    [id]
+  );
+  return rows[0] ? mapBookingRow(rows[0]) : null;
+}
+
+/**
+ * Fires on a Stripe `charge.refunded` webhook event for a *full* refund —
+ * releases every still-confirmed booking tied to that payment so the slot(s)
+ * reopen automatically. Partial refunds are intentionally not handled here
+ * (Stripe doesn't tell us which specific lesson a partial refund covers);
+ * those need a manual cancel from the admin calendar instead.
+ */
+export async function cancelBookingsByPaymentIntent(paymentIntentId: string): Promise<BookingRecord[]> {
+  const { rows } = await sql.query<BookingRow>(
+    `UPDATE bookings SET status = 'cancelled'
+     WHERE stripe_payment_intent_id = $1 AND status = 'confirmed'
+     RETURNING ${BOOKING_COLUMNS}`,
+    [paymentIntentId]
+  );
+  return rows.map((r) => mapBookingRow(r));
 }
 
 export async function getBlockedSlotsList(
