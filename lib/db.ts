@@ -1,6 +1,24 @@
 import { sql } from "@vercel/postgres";
-import { ExcludedSlots, OccupiedRange, SLOT_INTERVAL_MINUTES, SlotSelection, timeToMinutes } from "./availability";
+import {
+  AvailabilityData,
+  OccupiedRange,
+  SLOT_INTERVAL_MINUTES,
+  SlotSelection,
+  parseDateKey,
+  timeToMinutes,
+  toDateKey,
+} from "./availability";
 import { manageTokenFor } from "./manage-token";
+
+export interface AvailabilityWindow {
+  id: number;
+  /** 0 (Sun) .. 6 (Sat) for a recurring weekly window; null for a one-off */
+  weekday: number | null;
+  /** set only for one-off (non-repeating) windows */
+  specificDate: string | null;
+  startTime: string;
+  endTime: string;
+}
 
 export interface BookingRecord {
   id: number;
@@ -224,11 +242,91 @@ export async function getBlockedSlotsList(
   }));
 }
 
-/** Combines confirmed bookings + admin blocks into the shape lib/availability.ts needs. */
-export async function getExcludedSlots(startDate: string, endDate: string): Promise<ExcludedSlots> {
-  const [booked, blocked] = await Promise.all([
+export async function getAvailabilityWindows(): Promise<AvailabilityWindow[]> {
+  const { rows } = await sql<{
+    id: number;
+    weekday: number | null;
+    specific_date: string | null;
+    start_time: string;
+    end_time: string;
+  }>`
+    SELECT id, weekday, specific_date::text, start_time, end_time FROM availability_windows
+    ORDER BY weekday NULLS LAST, specific_date NULLS LAST, start_time
+  `;
+  return rows.map((r) => ({
+    id: r.id,
+    weekday: r.weekday,
+    specificDate: r.specific_date,
+    startTime: r.start_time,
+    endTime: r.end_time,
+  }));
+}
+
+export async function addAvailabilityWindow(input: {
+  weekday: number | null;
+  specificDate: string | null;
+  startTime: string;
+  endTime: string;
+}): Promise<void> {
+  await sql`
+    INSERT INTO availability_windows (weekday, specific_date, start_time, end_time)
+    VALUES (${input.weekday}, ${input.specificDate}, ${input.startTime}, ${input.endTime})
+  `;
+}
+
+export async function removeAvailabilityWindow(id: number): Promise<void> {
+  await sql`DELETE FROM availability_windows WHERE id = ${id}`;
+}
+
+/** Expands recurring (weekday) + one-off (specificDate) windows into per-date minute ranges across [startDate, endDate]. */
+function expandAvailabilityWindows(
+  startDate: string,
+  endDate: string,
+  windows: AvailabilityWindow[]
+): Map<string, OccupiedRange[]> {
+  const openRanges = new Map<string, OccupiedRange[]>();
+
+  function addOpen(date: string, startMinutes: number, endMinutes: number) {
+    const list = openRanges.get(date) ?? [];
+    list.push({ startMinutes, endMinutes });
+    openRanges.set(date, list);
+  }
+
+  const recurringByWeekday = new Map<number, AvailabilityWindow[]>();
+  const oneOffByDate = new Map<string, AvailabilityWindow[]>();
+  for (const w of windows) {
+    if (w.weekday !== null) {
+      const list = recurringByWeekday.get(w.weekday) ?? [];
+      list.push(w);
+      recurringByWeekday.set(w.weekday, list);
+    } else if (w.specificDate) {
+      const list = oneOffByDate.get(w.specificDate) ?? [];
+      list.push(w);
+      oneOffByDate.set(w.specificDate, list);
+    }
+  }
+
+  const cursor = parseDateKey(startDate);
+  while (toDateKey(cursor) <= endDate) {
+    const dateKey = toDateKey(cursor);
+    for (const w of recurringByWeekday.get(cursor.getDay()) ?? []) {
+      addOpen(dateKey, timeToMinutes(w.startTime), timeToMinutes(w.endTime));
+    }
+    for (const w of oneOffByDate.get(dateKey) ?? []) {
+      addOpen(dateKey, timeToMinutes(w.startTime), timeToMinutes(w.endTime));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return openRanges;
+}
+
+/** Combines confirmed bookings + admin blocks + the tutor's configured open windows into the shape lib/availability.ts needs. */
+export async function getExcludedSlots(startDate: string, endDate: string): Promise<AvailabilityData> {
+  const [booked, blocked, windows] = await Promise.all([
     getBookedSlotsInRange(startDate, endDate),
     getBlockedSlotsInRange(startDate, endDate),
+    getAvailabilityWindows(),
   ]);
 
   const fullyBlockedDates = new Set<string>();
@@ -255,7 +353,15 @@ export async function getExcludedSlots(startDate: string, endDate: string): Prom
     }
   }
 
-  return { fullyBlockedDates, occupiedRanges };
+  const openRanges = expandAvailabilityWindows(startDate, endDate, windows);
+
+  return { fullyBlockedDates, occupiedRanges, openRanges };
+}
+
+/** Same open-window expansion as getExcludedSlots, exposed separately so the admin calendar can render open/closed cells without also pulling bookings. */
+export async function getOpenRangesInRange(startDate: string, endDate: string): Promise<Map<string, OccupiedRange[]>> {
+  const windows = await getAvailabilityWindows();
+  return expandAvailabilityWindows(startDate, endDate, windows);
 }
 
 export async function blockSlot(date: string, time: string | null, reason: string): Promise<void> {

@@ -8,16 +8,10 @@ export interface SlotSelection {
 }
 
 // ── Editable configuration ──────────────────────────────────────────────
-// Business hours per weekday (0 = Sunday ... 6 = Saturday). `null` = closed.
-export const BUSINESS_HOURS: Record<number, { start: string; end: string } | null> = {
-  0: { start: "09:00", end: "18:00" },
-  1: { start: "09:00", end: "18:00" },
-  2: { start: "09:00", end: "18:00" },
-  3: { start: "09:00", end: "18:00" },
-  4: { start: "09:00", end: "18:00" },
-  5: { start: "09:00", end: "18:00" },
-  6: { start: "09:00", end: "18:00" },
-};
+// There's no fixed weekly template here anymore — the tutor's actual open
+// hours are admin-managed data (see lib/db.ts's availability_windows table),
+// set via the "Set availability" tool in /admin. By default nothing is
+// bookable until a window is added.
 
 export const SLOT_INTERVAL_MINUTES = 15;
 export const BOOKING_WINDOW_DAYS = 45;
@@ -68,89 +62,106 @@ function isWithinBookingWindow(date: Date): boolean {
   return date >= startOfToday && date <= maxDate;
 }
 
-export function isDateBookable(date: Date, fullyBlockedDates: Set<string>): boolean {
-  const dateKey = toDateKey(date);
-  if (fullyBlockedDates.has(dateKey)) return false;
-  if (!isWithinBookingWindow(date)) return false;
-  return BUSINESS_HOURS[date.getDay()] !== null;
-}
-
 export interface OccupiedRange {
   startMinutes: number;
   /** exclusive */
   endMinutes: number;
 }
 
-export interface ExcludedSlots {
-  /** dateKeys that are fully closed (holidays, blocked whole day) */
+export interface AvailabilityData {
+  /** dateKeys that are fully closed (holidays, blocked whole day) even if an open window would otherwise apply */
   fullyBlockedDates: Set<string>;
-  /** dateKey -> minute ranges already occupied that day (bookings' full duration, or admin blocks) */
+  /** dateKey -> minute ranges already occupied that day (bookings' full duration, or admin point-blocks) */
   occupiedRanges: Map<string, OccupiedRange[]>;
+  /** dateKey -> minute ranges the tutor has explicitly opened up that day (recurring weekly windows + one-off dates, already expanded — see lib/db.ts#getExcludedSlots) */
+  openRanges: Map<string, OccupiedRange[]>;
 }
 
 function rangesOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
 
+/** Merges overlapping/back-to-back ranges so a lesson can straddle two windows that are really one continuous span (e.g. 09:00-18:00 + 18:00-19:00 → 09:00-19:00). */
+function mergeRanges(ranges: OccupiedRange[]): OccupiedRange[] {
+  if (ranges.length <= 1) return ranges;
+  const sorted = [...ranges].sort((a, b) => a.startMinutes - b.startMinutes);
+  const merged: OccupiedRange[] = [sorted[0]];
+  for (const r of sorted.slice(1)) {
+    const last = merged[merged.length - 1];
+    if (r.startMinutes <= last.endMinutes) {
+      last.endMinutes = Math.max(last.endMinutes, r.endMinutes);
+    } else {
+      merged.push({ ...r });
+    }
+  }
+  return merged;
+}
+
+export function isDateBookable(date: Date, fullyBlockedDates: Set<string>, hasOpenWindow: boolean): boolean {
+  const dateKey = toDateKey(date);
+  if (fullyBlockedDates.has(dateKey)) return false;
+  if (!isWithinBookingWindow(date)) return false;
+  return hasOpenWindow;
+}
+
 /** Returns available start times (HH:mm) for a lesson of `durationMinutes` on `date`. */
 export function generateTimeSlots(
   date: Date,
   durationMinutes: number,
-  excluded: ExcludedSlots
+  data: AvailabilityData
 ): string[] {
-  if (!isDateBookable(date, excluded.fullyBlockedDates)) return [];
-
-  const hours = BUSINESS_HOURS[date.getDay()];
-  if (!hours) return [];
-
   const dateKey = toDateKey(date);
-  const dayRanges = excluded.occupiedRanges.get(dateKey) ?? [];
-  const startMinutes = timeToMinutes(hours.start);
-  const endMinutes = timeToMinutes(hours.end);
+  const dayOpenRanges = mergeRanges(data.openRanges.get(dateKey) ?? []);
+
+  if (!isDateBookable(date, data.fullyBlockedDates, dayOpenRanges.length > 0)) return [];
+
+  const dayOccupied = data.occupiedRanges.get(dateKey) ?? [];
 
   const now = new Date();
   const isToday = toDateKey(now) === dateKey;
   const earliestAllowed = new Date(now.getTime() + MIN_NOTICE_HOURS * 60 * 60 * 1000);
 
-  const slots: string[] = [];
-  for (
-    let m = startMinutes;
-    m + durationMinutes <= endMinutes;
-    m += SLOT_INTERVAL_MINUTES
-  ) {
-    const candidateEnd = m + durationMinutes;
-    const overlapsExisting = dayRanges.some((r) =>
-      rangesOverlap(m, candidateEnd, r.startMinutes, r.endMinutes)
-    );
-    if (overlapsExisting) continue;
+  const slots = new Set<string>();
+  for (const window of dayOpenRanges) {
+    for (
+      let m = window.startMinutes;
+      m + durationMinutes <= window.endMinutes;
+      m += SLOT_INTERVAL_MINUTES
+    ) {
+      const candidateEnd = m + durationMinutes;
+      const overlapsExisting = dayOccupied.some((r) =>
+        rangesOverlap(m, candidateEnd, r.startMinutes, r.endMinutes)
+      );
+      if (overlapsExisting) continue;
 
-    if (isToday) {
-      const slotDateTime = new Date(date);
-      slotDateTime.setHours(Math.floor(m / 60), m % 60, 0, 0);
-      if (slotDateTime < earliestAllowed) continue;
+      if (isToday) {
+        const slotDateTime = new Date(date);
+        slotDateTime.setHours(Math.floor(m / 60), m % 60, 0, 0);
+        if (slotDateTime < earliestAllowed) continue;
+      }
+
+      slots.add(minutesToTime(m));
     }
-
-    slots.push(minutesToTime(m));
   }
-  return slots;
+  return Array.from(slots).sort();
 }
 
 export function hasAvailability(
   date: Date,
   durationMinutes: number,
-  excluded: ExcludedSlots
+  data: AvailabilityData
 ): boolean {
-  return generateTimeSlots(date, durationMinutes, excluded).length > 0;
+  return generateTimeSlots(date, durationMinutes, data).length > 0;
 }
 
 export function isSlotAvailable(
   dateKey: string,
   time: string,
   durationMinutes: number,
-  excluded: ExcludedSlots
+  data: AvailabilityData
 ): boolean {
   const date = parseDateKey(dateKey);
-  return generateTimeSlots(date, durationMinutes, excluded).includes(time);
+  return generateTimeSlots(date, durationMinutes, data).includes(time);
 }
 
 /**
@@ -163,7 +174,7 @@ export function buildRecurringSlots(
   frequency: RecurrenceFrequency,
   occurrences: number,
   durationMinutes: number,
-  excluded: ExcludedSlots
+  data: AvailabilityData
 ): { added: SlotSelection[]; skipped: SlotSelection[] } {
   const added: SlotSelection[] = [];
   const skipped: SlotSelection[] = [];
@@ -179,7 +190,7 @@ export function buildRecurringSlots(
     const candidateKey = toDateKey(candidate);
     const slot = { date: candidateKey, time: first.time };
 
-    if (i === 0 || isSlotAvailable(candidateKey, first.time, durationMinutes, excluded)) {
+    if (i === 0 || isSlotAvailable(candidateKey, first.time, durationMinutes, data)) {
       added.push(slot);
     } else {
       skipped.push(slot);

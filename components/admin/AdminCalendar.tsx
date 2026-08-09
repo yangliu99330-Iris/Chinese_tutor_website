@@ -2,13 +2,18 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  BUSINESS_HOURS,
   SLOT_INTERVAL_MINUTES,
   formatTimeLabel,
   minutesToTime,
   timeToMinutes,
   toDateKey,
 } from "@/lib/availability";
+import SetAvailabilityModal from "./SetAvailabilityModal";
+
+interface OpenRange {
+  startMinutes: number;
+  endMinutes: number;
+}
 
 interface BookingRecord {
   id: number;
@@ -48,27 +53,57 @@ function addDays(date: Date, days: number): Date {
   return d;
 }
 
-function getRowTimes(): string[] {
-  let minStart = 24 * 60;
-  let maxEnd = 0;
-  for (const day of Object.values(BUSINESS_HOURS)) {
-    if (!day) continue;
-    minStart = Math.min(minStart, timeToMinutes(day.start));
-    maxEnd = Math.max(maxEnd, timeToMinutes(day.end));
+/**
+ * The grid's row range is no longer a fixed constant — it adapts to whatever
+ * the tutor has actually opened up (or has bookings/blocks in) for the
+ * displayed week, falling back to a sane default when nothing's configured
+ * yet so the grid isn't empty on first load.
+ */
+function computeRowTimes(
+  weekDays: Date[],
+  openRanges: Record<string, OpenRange[]>,
+  bookings: BookingRecord[],
+  blockedSlots: BlockedSlotRecord[]
+): string[] {
+  let minStart = Infinity;
+  let maxEnd = -Infinity;
+
+  for (const d of weekDays) {
+    for (const r of openRanges[toDateKey(d)] ?? []) {
+      minStart = Math.min(minStart, r.startMinutes);
+      maxEnd = Math.max(maxEnd, r.endMinutes);
+    }
   }
+  for (const b of bookings) {
+    const start = timeToMinutes(b.time);
+    minStart = Math.min(minStart, start);
+    maxEnd = Math.max(maxEnd, start + b.durationMinutes);
+  }
+  for (const b of blockedSlots) {
+    if (b.time === null) continue;
+    const start = timeToMinutes(b.time);
+    minStart = Math.min(minStart, start);
+    maxEnd = Math.max(maxEnd, start + SLOT_INTERVAL_MINUTES);
+  }
+
+  if (!Number.isFinite(minStart) || !Number.isFinite(maxEnd)) {
+    minStart = timeToMinutes("09:00");
+    maxEnd = timeToMinutes("18:00");
+  }
+
   const times: string[] = [];
   for (let m = minStart; m < maxEnd; m += SLOT_INTERVAL_MINUTES) times.push(minutesToTime(m));
   return times;
 }
 
-const ROW_TIMES = getRowTimes();
-
 export default function AdminCalendar() {
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlotRecord[]>([]);
+  const [openRanges, setOpenRanges] = useState<Record<string, OpenRange[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeBooking, setActiveBooking] = useState<BookingRecord | null>(null);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const weekEnd = weekDays[6];
@@ -82,6 +117,7 @@ export default function AdminCalendar() {
       .then((data) => {
         setBookings(data.bookings ?? []);
         setBlockedSlots(data.blockedSlots ?? []);
+        setOpenRanges(data.openRanges ?? {});
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,6 +126,13 @@ export default function AdminCalendar() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  const rowTimes = computeRowTimes(weekDays, openRanges, bookings, blockedSlots);
+
+  function isOpenAt(dateKey: string, time: string): boolean {
+    const m = timeToMinutes(time);
+    return (openRanges[dateKey] ?? []).some((r) => m >= r.startMinutes && m < r.endMinutes);
+  }
 
   // Bookings occupy their full duration, not just their starting 15-min row —
   // group them per day so every row within [start, end) renders as booked.
@@ -151,13 +194,23 @@ export default function AdminCalendar() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-playfair text-2xl font-bold text-gray-900">Schedule</h1>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-sm text-gray-400 hover:text-gray-600"
-        >
-          Log out
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setShowAvailabilityModal(true)}
+            className="px-4 py-2 rounded-lg font-bold text-sm text-white"
+            style={{ backgroundColor: "#B668BD" }}
+          >
+            Set Availability
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-sm text-gray-400 hover:text-gray-600"
+          >
+            Log out
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between mb-4">
@@ -188,7 +241,10 @@ export default function AdminCalendar() {
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded inline-block bg-gray-300" /> Blocked
         </span>
-        <span>Click an empty slot to block it. Click a booking for details.</span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded inline-block bg-gray-100 border border-gray-200" /> Closed
+        </span>
+        <span>Click an open slot to block it. Click a booking for details.</span>
       </div>
 
       <div className="overflow-x-auto bg-white rounded-2xl border" style={{ borderColor: "#F8ECE1" }}>
@@ -205,7 +261,7 @@ export default function AdminCalendar() {
             </div>
           ))}
 
-          {ROW_TIMES.map((time) => (
+          {rowTimes.map((time) => (
             <div key={time} className="contents">
               <div
                 className="border-b border-r px-2 py-1.5 text-[11px] text-gray-400 text-right"
@@ -219,10 +275,12 @@ export default function AdminCalendar() {
                 const bookingHit = bookingAt(dateKey, time);
                 const blocked = blockedTimeMap.get(key);
                 const dayFullyBlocked = fullyBlockedDates.has(dateKey);
+                const open = isOpenAt(dateKey, time);
 
                 let content: React.ReactNode = null;
                 let cellStyle: React.CSSProperties = {};
                 let onClick: (() => void) | undefined;
+                let disabled = loading || dayFullyBlocked;
 
                 if (bookingHit) {
                   cellStyle = {
@@ -241,6 +299,9 @@ export default function AdminCalendar() {
                     content = <span className="text-gray-500 text-[10px]">Blocked</span>;
                     onClick = () => handleUnblockSlot(blocked.id);
                   }
+                } else if (!open) {
+                  cellStyle = { backgroundColor: "#F9FAFB" };
+                  disabled = true;
                 } else {
                   onClick = () => handleBlockSlot(dateKey, time);
                 }
@@ -249,9 +310,9 @@ export default function AdminCalendar() {
                   <button
                     key={key}
                     type="button"
-                    disabled={loading || dayFullyBlocked}
+                    disabled={disabled}
                     onClick={onClick}
-                    className="border-b border-r h-7 hover:bg-gray-50 transition-colors flex items-center justify-center"
+                    className="border-b border-r h-7 hover:bg-gray-50 transition-colors flex items-center justify-center disabled:hover:bg-transparent"
                     style={{ borderColor: "#F8ECE1", ...cellStyle }}
                   >
                     {content}
@@ -305,6 +366,13 @@ export default function AdminCalendar() {
             </div>
           </div>
         </div>
+      )}
+
+      {showAvailabilityModal && (
+        <SetAvailabilityModal
+          onClose={() => setShowAvailabilityModal(false)}
+          onSaved={refresh}
+        />
       )}
     </div>
   );

@@ -52,3 +52,32 @@ CREATE TABLE IF NOT EXISTS booking_emails (
   stripe_session_id TEXT PRIMARY KEY,
   sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- The tutor's actual bookable hours, set via "Set availability" in /admin
+-- (see lib/db.ts#getAvailabilityWindows). A row is either a recurring weekly
+-- window (weekday set, specific_date null) or a one-off window on a single
+-- date (specific_date set, weekday null) -- never both. There is no default:
+-- nothing is bookable until at least one window exists.
+CREATE TABLE IF NOT EXISTS availability_windows (
+  id SERIAL PRIMARY KEY,
+  weekday INTEGER,       -- 0 (Sun) .. 6 (Sat); null for a one-off window
+  specific_date DATE,    -- set only for a one-off window
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (
+    (weekday IS NOT NULL AND specific_date IS NULL) OR
+    (weekday IS NULL AND specific_date IS NOT NULL)
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_availability_windows_weekday ON availability_windows (weekday);
+CREATE INDEX IF NOT EXISTS idx_availability_windows_date ON availability_windows (specific_date);
+
+-- If the `bookings`/`blocked_slots` tables already exist from before this
+-- feature, run the CREATE TABLE + indexes above for availability_windows,
+-- then seed it with the site's old flat "every day 9:00-18:00" default so
+-- public booking doesn't go blank the moment this deploys -- the tutor can
+-- then edit/narrow it down to her real hours from the admin calendar:
+-- INSERT INTO availability_windows (weekday, start_time, end_time)
+--   SELECT d, '09:00', '18:00' FROM generate_series(0, 6) AS d;
