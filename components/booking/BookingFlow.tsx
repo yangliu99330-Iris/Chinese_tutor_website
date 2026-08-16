@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Calendar from "./Calendar";
 import TimeSlotGrid from "./TimeSlotGrid";
 import SlotActionModal from "./SlotActionModal";
@@ -8,6 +8,8 @@ import SelectionSummary from "./SelectionSummary";
 import CheckoutForm from "./CheckoutForm";
 import { RecurrenceFrequency, SlotSelection } from "@/lib/availability";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
+import { detectCustomerZone, ukToZone, zoneToUk } from "@/lib/timezone";
+import { useLocalAvailability } from "@/lib/useLocalAvailability";
 
 type Step = "time" | "checkout";
 
@@ -19,18 +21,40 @@ export default function BookingFlow() {
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Canonical storage stays UK wall-clock time throughout, matching what the
+  // backend (availability checks, checkout, DB) expects — only the calendar
+  // and time grid the customer interacts with show their own local time.
   const [selectedSlots, setSelectedSlots] = useState<SlotSelection[]>([]);
+  // The slot currently being decided on in SlotActionModal is in the
+  // customer's local zone (it comes straight from what they clicked).
   const [activeSlot, setActiveSlot] = useState<{ date: string; time: string } | null>(null);
   const [skippedNotice, setSkippedNotice] = useState<string | null>(null);
+  const [customerZone, setCustomerZone] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCustomerZone(detectCustomerZone());
+  }, []);
 
   const durationMinutes = getLessonType(lessonType).durationMinutes;
 
-  const selectedTimesForDate = selectedDate
-    ? selectedSlots.filter((s) => s.date === selectedDate).map((s) => s.time)
-    : [];
+  const { localTimesByDate, availableLocalDates, loading: availabilityLoading } = useLocalAvailability(
+    durationMinutes,
+    customerZone
+  );
 
-  function addSlot(slot: SlotSelection) {
-    setSelectedSlots((prev) => [...prev, slot]);
+  const timesForSelectedDate = selectedDate ? localTimesByDate.get(selectedDate) ?? [] : [];
+
+  const selectedTimesForDate =
+    selectedDate && customerZone
+      ? selectedSlots
+          .map((s) => ukToZone(s.date, s.time, customerZone))
+          .filter((s) => s.date === selectedDate)
+          .map((s) => s.time)
+      : [];
+
+  function addSlot(localSlot: { date: string; time: string }) {
+    if (!customerZone) return;
+    setSelectedSlots((prev) => [...prev, zoneToUk(localSlot.date, localSlot.time, customerZone)]);
   }
 
   function handleRemoveSlot(index: number) {
@@ -49,13 +73,17 @@ export default function BookingFlow() {
   }
 
   async function handleSelectRecurring(frequency: RecurrenceFrequency, occurrences: number) {
-    if (!activeSlot) return;
+    if (!activeSlot || !customerZone) return;
     setActiveSlot(null);
+
+    // The tutor's recurring windows repeat on UK weekdays, so the recurrence
+    // itself has to be computed in UK terms — convert before asking the API.
+    const ukSlot = zoneToUk(activeSlot.date, activeSlot.time, customerZone);
 
     const res = await fetch("/api/availability/recurring", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...activeSlot, frequency, occurrences, duration: durationMinutes }),
+      body: JSON.stringify({ ...ukSlot, frequency, occurrences, duration: durationMinutes }),
     });
     const { added, skipped } = await res.json();
 
@@ -72,6 +100,7 @@ export default function BookingFlow() {
       <CheckoutForm
         lessonType={lessonType}
         slots={selectedSlots}
+        customerZone={customerZone}
         onBack={() => setStep("time")}
       />
     );
@@ -95,7 +124,7 @@ export default function BookingFlow() {
             onMonthChange={setViewMonth}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            durationMinutes={durationMinutes}
+            availableDates={availabilityLoading ? null : availableLocalDates}
           />
 
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: "#F8ECE1" }}>
@@ -104,8 +133,7 @@ export default function BookingFlow() {
             </p>
             {selectedDate ? (
               <TimeSlotGrid
-                dateKey={selectedDate}
-                durationMinutes={durationMinutes}
+                slots={availabilityLoading ? null : timesForSelectedDate}
                 selectedTimesForDate={selectedTimesForDate}
                 onPickTime={(time) => setActiveSlot({ date: selectedDate, time })}
               />
@@ -124,6 +152,7 @@ export default function BookingFlow() {
             setSelectedSlots([]);
           }}
           slots={selectedSlots}
+          customerZone={customerZone}
           onRemove={handleRemoveSlot}
           onContinue={() => setStep("checkout")}
         />

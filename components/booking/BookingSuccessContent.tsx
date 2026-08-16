@@ -3,12 +3,44 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { formatTimeLabel, SlotSelection } from "@/lib/availability";
+import { getLessonType, LessonTypeId } from "@/lib/pricing";
+import { ukRangeToZone } from "@/lib/timezone";
 
 interface SessionInfo {
   status: string;
   customerEmail: string | null;
   amountTotal: number | null;
   metadata: Record<string, string> | null;
+}
+
+function formatSlotsInCustomerZone(metadata: Record<string, string>): string[] | null {
+  let slots: SlotSelection[];
+  try {
+    slots = JSON.parse(metadata.slots_json ?? "[]");
+  } catch {
+    return null;
+  }
+  if (slots.length === 0) return null;
+
+  let durationMinutes = 60;
+  try {
+    durationMinutes = getLessonType(metadata.lesson_type as LessonTypeId).durationMinutes;
+  } catch {
+    // fall back to default above
+  }
+
+  const zone = metadata.customer_timezone || "Europe/London";
+
+  return slots.map((s) => {
+    const { start, end } = ukRangeToZone(s.date, s.time, durationMinutes, zone);
+    const dateLabel = new Date(`${start.date}T00:00:00`).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    return `${dateLabel} · ${formatTimeLabel(start.time)}–${formatTimeLabel(end.time)}`;
+  });
 }
 
 export default function BookingSuccessContent() {
@@ -51,6 +83,8 @@ export default function BookingSuccessContent() {
     return <div className="text-center py-20 text-gray-400">Loading your booking…</div>;
   }
 
+  const localSlotLines = info.metadata ? formatSlotsInCustomerZone(info.metadata) : null;
+
   return (
     <div className="max-w-lg mx-auto text-center py-20 px-4">
       <span className="text-5xl block mb-4">✅</span>
@@ -60,12 +94,18 @@ export default function BookingSuccessContent() {
         reach out to confirm any final details.
       </p>
 
-      {info.metadata?.slots_summary && (
+      {localSlotLines && localSlotLines.length > 0 && (
         <div className="bg-white rounded-2xl border p-6 text-left mb-8" style={{ borderColor: "#F8ECE1" }}>
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#B668BD" }}>
             Your Lessons
           </p>
-          <p className="text-sm text-gray-700">{info.metadata.slots_summary}</p>
+          <ul className="flex flex-col gap-1">
+            {localSlotLines.map((line, i) => (
+              <li key={i} className="text-sm text-gray-700">
+                {line}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

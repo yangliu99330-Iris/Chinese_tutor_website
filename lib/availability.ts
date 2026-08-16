@@ -146,14 +146,6 @@ export function generateTimeSlots(
   return Array.from(slots).sort();
 }
 
-export function hasAvailability(
-  date: Date,
-  durationMinutes: number,
-  data: AvailabilityData
-): boolean {
-  return generateTimeSlots(date, durationMinutes, data).length > 0;
-}
-
 export function isSlotAvailable(
   dateKey: string,
   time: string,

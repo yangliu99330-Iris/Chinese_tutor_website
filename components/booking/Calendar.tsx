@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { toDateKey } from "@/lib/availability";
 
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -14,7 +13,8 @@ interface CalendarProps {
   onMonthChange: (next: Date) => void;
   selectedDate: string | null;
   onSelectDate: (dateKey: string) => void;
-  durationMinutes: number;
+  /** Dates (in whatever zone the caller is bucketing by) that have at least one open slot. `null` while loading. */
+  availableDates: Set<string> | null;
 }
 
 export default function Calendar({
@@ -22,28 +22,10 @@ export default function Calendar({
   onMonthChange,
   selectedDate,
   onSelectDate,
-  durationMinutes,
+  availableDates,
 }: CalendarProps) {
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
-
-  const [availableDates, setAvailableDates] = useState<Set<string> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setAvailableDates(null);
-    fetch(`/api/availability/month?year=${year}&month=${month}&duration=${durationMinutes}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setAvailableDates(new Set(data.availableDates ?? []));
-      })
-      .catch(() => {
-        if (!cancelled) setAvailableDates(new Set());
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [year, month, durationMinutes]);
 
   const firstOfMonth = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();

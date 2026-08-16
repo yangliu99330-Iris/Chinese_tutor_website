@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { formatTimeLabel, minutesToTime, parseDateKey, SlotSelection, timeToMinutes } from "@/lib/availability";
+import { formatTimeLabel, parseDateKey, SlotSelection } from "@/lib/availability";
 import { formatPrice, getLessonType, LessonTypeId } from "@/lib/pricing";
+import { detectCustomerZone, ukRangeToZone } from "@/lib/timezone";
 
 interface CheckoutFormProps {
   lessonType: LessonTypeId;
   slots: SlotSelection[];
+  /** Slots are stored UK-canonical; this is used to display them in the customer's own zone. */
+  customerZone: string | null;
   onBack: () => void;
 }
 
-export default function CheckoutForm({ lessonType, slots, onBack }: CheckoutFormProps) {
+export default function CheckoutForm({ lessonType, slots, customerZone, onBack }: CheckoutFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,7 +30,7 @@ export default function CheckoutForm({ lessonType, slots, onBack }: CheckoutForm
     setError(null);
 
     try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const timezone = customerZone ?? detectCustomerZone();
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,21 +144,25 @@ export default function CheckoutForm({ lessonType, slots, onBack }: CheckoutForm
         </p>
         <p className="font-semibold text-gray-900 mb-3">{lesson.label}</p>
         <ul className="flex flex-col gap-2 mb-4 max-h-64 overflow-y-auto">
-          {slots.map((slot, i) => (
-            <li
-              key={`${slot.date}-${slot.time}-${i}`}
-              className="text-sm text-gray-600 rounded-lg px-3 py-2"
-              style={{ backgroundColor: "#FCFCFC" }}
-            >
-              {parseDateKey(slot.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}{" "}
-              · {formatTimeLabel(slot.time)}–
-              {formatTimeLabel(minutesToTime(timeToMinutes(slot.time) + lesson.durationMinutes))}
-            </li>
-          ))}
+          {slots.map((slot, i) => {
+            const { start, end } = customerZone
+              ? ukRangeToZone(slot.date, slot.time, lesson.durationMinutes, customerZone)
+              : { start: { date: slot.date, time: slot.time }, end: { date: slot.date, time: slot.time } };
+            return (
+              <li
+                key={`${slot.date}-${slot.time}-${i}`}
+                className="text-sm text-gray-600 rounded-lg px-3 py-2"
+                style={{ backgroundColor: "#FCFCFC" }}
+              >
+                {parseDateKey(start.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}{" "}
+                · {formatTimeLabel(start.time)}–{formatTimeLabel(end.time)}
+              </li>
+            );
+          })}
         </ul>
         <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: "#F8ECE1" }}>
           <span className="text-sm font-semibold text-gray-600">

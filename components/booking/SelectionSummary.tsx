@@ -2,11 +2,14 @@
 
 import { formatTimeLabel, minutesToTime, parseDateKey, SlotSelection, timeToMinutes } from "@/lib/availability";
 import { formatPrice, LESSON_TYPES, LessonTypeId } from "@/lib/pricing";
+import { ukRangeToZone } from "@/lib/timezone";
 
 interface SelectionSummaryProps {
   lessonType: LessonTypeId;
   onChangeLessonType: (id: LessonTypeId) => void;
   slots: SlotSelection[];
+  /** Slots are stored UK-canonical; this is used to display them in the customer's own zone. */
+  customerZone: string | null;
   onRemove: (index: number) => void;
   onContinue: () => void;
 }
@@ -15,6 +18,7 @@ export default function SelectionSummary({
   lessonType,
   onChangeLessonType,
   slots,
+  customerZone,
   onRemove,
   onContinue,
 }: SelectionSummaryProps) {
@@ -62,30 +66,37 @@ export default function SelectionSummary({
         </p>
       ) : (
         <ul className="flex flex-col gap-2 mb-6 max-h-64 overflow-y-auto">
-          {slots.map((slot, i) => (
-            <li
-              key={`${slot.date}-${slot.time}-${i}`}
-              className="flex items-center justify-between text-sm rounded-lg px-3 py-2"
-              style={{ backgroundColor: "#FCFCFC" }}
-            >
-              <span className="text-gray-700">
-                {parseDateKey(slot.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}{" "}
-                · {formatTimeLabel(slot.time)}–
-                {formatTimeLabel(minutesToTime(timeToMinutes(slot.time) + lesson.durationMinutes))}
-              </span>
-              <button
-                type="button"
-                onClick={() => onRemove(i)}
-                aria-label="Remove"
-                className="text-gray-400 hover:text-red-500 font-bold px-1"
+          {slots.map((slot, i) => {
+            const { start, end } = customerZone
+              ? ukRangeToZone(slot.date, slot.time, lesson.durationMinutes, customerZone)
+              : {
+                  start: { date: slot.date, time: slot.time },
+                  end: { date: slot.date, time: minutesToTime(timeToMinutes(slot.time) + lesson.durationMinutes) },
+                };
+            return (
+              <li
+                key={`${slot.date}-${slot.time}-${i}`}
+                className="flex items-center justify-between text-sm rounded-lg px-3 py-2"
+                style={{ backgroundColor: "#FCFCFC" }}
               >
-                ×
-              </button>
-            </li>
-          ))}
+                <span className="text-gray-700">
+                  {parseDateKey(start.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · {formatTimeLabel(start.time)}–{formatTimeLabel(end.time)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(i)}
+                  aria-label="Remove"
+                  className="text-gray-400 hover:text-red-500 font-bold px-1"
+                >
+                  ×
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 

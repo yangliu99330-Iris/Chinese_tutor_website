@@ -5,6 +5,8 @@ import { DateTime } from "luxon";
 import Calendar from "@/components/booking/Calendar";
 import TimeSlotGrid from "@/components/booking/TimeSlotGrid";
 import { formatTimeLabel } from "@/lib/availability";
+import { detectCustomerZone, TUTOR_ZONE, zoneToUk } from "@/lib/timezone";
+import { useLocalAvailability } from "@/lib/useLocalAvailability";
 
 interface BookingInfo {
   lessonLabel: string;
@@ -15,15 +17,19 @@ interface BookingInfo {
   status: string;
 }
 
-function formatRange(date: string, time: string, durationMinutes: number): string {
+function zoneLabel(zone: string): string {
+  return zone === TUTOR_ZONE ? "UK time" : zone.replace(/_/g, " ");
+}
+
+function formatRange(date: string, time: string, durationMinutes: number, zone: string): string {
   const [year, month, day] = date.split("-").map(Number);
   const [hour, minute] = time.split(":").map(Number);
-  const start = DateTime.fromObject({ year, month, day, hour, minute }, { zone: "Europe/London" });
+  const start = DateTime.fromObject({ year, month, day, hour, minute }, { zone: TUTOR_ZONE }).setZone(zone);
   if (!start.isValid) return `${date} ${time}`;
   const end = start.plus({ minutes: durationMinutes });
   const startStr = start.toFormat("ccc, LLL d, yyyy 'at' h:mm a");
   const endStr = start.hasSame(end, "day") ? end.toFormat("h:mm a") : end.toFormat("ccc, LLL d, yyyy 'at' h:mm a");
-  return `${startStr} – ${endStr} (UK time)`;
+  return `${startStr} – ${endStr} (${zoneLabel(zone)})`;
 }
 
 type View = "loading" | "error" | "details" | "rescheduling" | "cancelled" | "rescheduled";
@@ -33,6 +39,7 @@ export default function ManageBooking({ token }: { token: string }) {
   const [booking, setBooking] = useState<BookingInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
+  const [customerZone, setCustomerZone] = useState<string | null>(null);
 
   const [viewMonth, setViewMonth] = useState(() => {
     const now = new Date();
@@ -40,6 +47,10 @@ export default function ManageBooking({ token }: { token: string }) {
   });
   const [newDate, setNewDate] = useState<string | null>(null);
   const [newTime, setNewTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCustomerZone(detectCustomerZone());
+  }, []);
 
   useEffect(() => {
     fetch(`/api/manage/${token}`)
@@ -53,6 +64,12 @@ export default function ManageBooking({ token }: { token: string }) {
       })
       .catch(() => setView("error"));
   }, [token]);
+
+  const { localTimesByDate, availableLocalDates, loading: availabilityLoading } = useLocalAvailability(
+    booking?.durationMinutes ?? 60,
+    customerZone
+  );
+  const timesForNewDate = newDate ? localTimesByDate.get(newDate) ?? [] : [];
 
   async function handleCancel() {
     if (!window.confirm("Cancel this lesson? If a refund is due, Miss Yang will process it separately.")) return;
@@ -71,18 +88,19 @@ export default function ManageBooking({ token }: { token: string }) {
   }
 
   async function handleConfirmReschedule() {
-    if (!newDate || !newTime) return;
+    if (!newDate || !newTime || !customerZone) return;
     setWorking(true);
     setError(null);
     try {
+      const uk = zoneToUk(newDate, newTime, customerZone);
       const res = await fetch(`/api/manage/${token}/reschedule`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: newDate, time: newTime }),
+        body: JSON.stringify({ date: uk.date, time: uk.time }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      setBooking((prev) => (prev ? { ...prev, date: newDate, time: newTime } : prev));
+      setBooking((prev) => (prev ? { ...prev, date: data.date, time: data.time } : prev));
       setView("rescheduled");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -110,14 +128,15 @@ export default function ManageBooking({ token }: { token: string }) {
     );
   }
 
-  if (!booking) return null;
+  if (!booking || !customerZone) return null;
 
   if (view === "cancelled") {
     return (
       <div className="text-center py-16">
         <h2 className="font-playfair text-2xl font-bold text-gray-900 mb-2">Booking Cancelled</h2>
         <p className="text-gray-500 text-sm">
-          This lesson ({formatRange(booking.date, booking.time, booking.durationMinutes)}) has been cancelled.
+          This lesson ({formatRange(booking.date, booking.time, booking.durationMinutes, customerZone)}) has been
+          cancelled.
         </p>
       </div>
     );
@@ -128,7 +147,8 @@ export default function ManageBooking({ token }: { token: string }) {
       <div className="text-center py-16">
         <h2 className="font-playfair text-2xl font-bold text-gray-900 mb-2">Booking Rescheduled</h2>
         <p className="text-gray-500 text-sm">
-          Your new lesson time: <strong>{formatRange(booking.date, booking.time, booking.durationMinutes)}</strong>
+          Your new lesson time:{" "}
+          <strong>{formatRange(booking.date, booking.time, booking.durationMinutes, customerZone)}</strong>
         </p>
       </div>
     );
@@ -146,7 +166,8 @@ export default function ManageBooking({ token }: { token: string }) {
         </button>
         <p className="text-sm text-gray-500 mb-4">
           Pick a new time for your <strong>{booking.lessonLabel}</strong> lesson. Your current time (
-          {formatRange(booking.date, booking.time, booking.durationMinutes)}) will be released once confirmed.
+          {formatRange(booking.date, booking.time, booking.durationMinutes, customerZone)}) will be released once
+          confirmed.
         </p>
 
         <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -158,7 +179,7 @@ export default function ManageBooking({ token }: { token: string }) {
               setNewDate(d);
               setNewTime(null);
             }}
-            durationMinutes={booking.durationMinutes}
+            availableDates={availabilityLoading ? null : availableLocalDates}
           />
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: "#F8ECE1" }}>
             <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#B668BD" }}>
@@ -166,8 +187,7 @@ export default function ManageBooking({ token }: { token: string }) {
             </p>
             {newDate ? (
               <TimeSlotGrid
-                dateKey={newDate}
-                durationMinutes={booking.durationMinutes}
+                slots={availabilityLoading ? null : timesForNewDate}
                 selectedTimesForDate={newTime ? [newTime] : []}
                 onPickTime={setNewTime}
               />
@@ -206,7 +226,9 @@ export default function ManageBooking({ token }: { token: string }) {
         {booking.lessonLabel}
       </p>
       <h2 className="font-playfair text-2xl font-bold text-gray-900 mb-4">{booking.customerName}</h2>
-      <p className="text-gray-700 mb-6">{formatRange(booking.date, booking.time, booking.durationMinutes)}</p>
+      <p className="text-gray-700 mb-6">
+        {formatRange(booking.date, booking.time, booking.durationMinutes, customerZone)}
+      </p>
 
       {error && (
         <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ backgroundColor: "#FEF2F2", color: "#B91C1C" }}>
