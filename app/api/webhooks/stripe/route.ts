@@ -42,6 +42,7 @@ async function persistBooking(session: Stripe.Checkout.Session) {
     customerPhone: m.customer_phone ?? "",
     notes: m.notes ?? "",
     amountPaidPerSlotCents,
+    customerTimezone: m.customer_timezone || "Europe/London",
   });
 }
 

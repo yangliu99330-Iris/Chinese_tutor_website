@@ -187,7 +187,8 @@ export async function sendBookingEmails(session: Stripe.Checkout.Session): Promi
  */
 export async function sendRefundCancellationEmail(booking: BookingRecord): Promise<void> {
   const lesson = lessonForId(booking.lessonType);
-  const timeRange = formatSlotRangeInZone(booking.date, booking.time, booking.durationMinutes, TUTOR_ZONE);
+  const zone = booking.customerTimezone || TUTOR_ZONE;
+  const timeRange = formatSlotRangeInZone(booking.date, booking.time, booking.durationMinutes, zone);
 
   await getResend().emails.send({
     from: BOOKING_FROM_EMAIL,
@@ -198,7 +199,7 @@ export async function sendRefundCancellationEmail(booking: BookingRecord): Promi
         <h2 style="color:#B668BD;">Booking Cancelled &amp; Refunded</h2>
         <p>Hi ${booking.customerName},</p>
         <p>Your refund has been processed, and the following lesson has been cancelled:</p>
-        <p><strong>${lesson.label}</strong> — ${timeRange} (UK time)</p>
+        <p><strong>${lesson.label}</strong> — ${timeRange} (${zoneLabelFor(zone)})</p>
         <p>If this wasn't expected, or you'd like to book a new time, just reply to this email or reach chinesetutoryang@gmail.com.</p>
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">学无止境 — Learning Has No Limits</p>
       </div>
@@ -214,7 +215,9 @@ export async function sendRefundCancellationEmail(booking: BookingRecord): Promi
  */
 export async function sendCustomerCancellationEmails(booking: BookingRecord): Promise<void> {
   const lesson = lessonForId(booking.lessonType);
-  const customerTimeRange = formatSlotRangeInZone(booking.date, booking.time, booking.durationMinutes, TUTOR_ZONE);
+  const zone = booking.customerTimezone || TUTOR_ZONE;
+  const customerLocalRange = formatSlotRangeInZone(booking.date, booking.time, booking.durationMinutes, zone);
+  const ukRange = formatSlotRangeInZone(booking.date, booking.time, booking.durationMinutes, TUTOR_ZONE);
 
   await Promise.all([
     getResend().emails.send({
@@ -226,7 +229,7 @@ export async function sendCustomerCancellationEmails(booking: BookingRecord): Pr
           <h2 style="color:#B668BD;">Booking Cancelled</h2>
           <p>Hi ${booking.customerName},</p>
           <p>As requested, this lesson has been cancelled:</p>
-          <p><strong>${lesson.label}</strong> — ${customerTimeRange} (UK time)</p>
+          <p><strong>${lesson.label}</strong> — ${customerLocalRange} (${zoneLabelFor(zone)})</p>
           <p>If a refund is due under the cancellation policy, Miss Yang will process it separately. Questions? Reply to this email or reach chinesetutoryang@gmail.com.</p>
           <p style="color:#9ca3af;font-size:12px;margin-top:24px;">学无止境 — Learning Has No Limits</p>
         </div>
@@ -240,7 +243,7 @@ export async function sendCustomerCancellationEmails(booking: BookingRecord): Pr
         <div style="font-family:sans-serif;color:#1f2937;max-width:520px;margin:0 auto;">
           <h2 style="color:#B668BD;">Student Cancelled a Lesson</h2>
           <p><strong>Student:</strong> ${booking.customerName} (${booking.customerEmail})</p>
-          <p><strong>${lesson.label}</strong> — ${customerTimeRange} (UK time)</p>
+          <p><strong>${lesson.label}</strong> — ${ukRange} (UK time)</p>
           <p><strong>Paid:</strong> £${(booking.amountPaidCents / 100).toFixed(2)}</p>
           <p style="color:#9ca3af;font-size:13px;">No refund has been issued automatically — check your 24-hour cancellation policy and refund via Stripe if appropriate. The slot has already been freed up on your schedule.</p>
         </div>
@@ -252,7 +255,11 @@ export async function sendCustomerCancellationEmails(booking: BookingRecord): Pr
 /** The customer rescheduled via their manage link — confirms the new time to both parties. */
 export async function sendRescheduleEmails(oldBooking: BookingRecord, newBooking: BookingRecord): Promise<void> {
   const lesson = lessonForId(newBooking.lessonType);
-  const oldRange = formatSlotRangeInZone(oldBooking.date, oldBooking.time, oldBooking.durationMinutes, TUTOR_ZONE);
+  const zone = newBooking.customerTimezone || TUTOR_ZONE;
+
+  const oldRangeLocal = formatSlotRangeInZone(oldBooking.date, oldBooking.time, oldBooking.durationMinutes, zone);
+  const newRangeLocal = formatSlotRangeInZone(newBooking.date, newBooking.time, newBooking.durationMinutes, zone);
+  const oldRangeUk = formatSlotRangeInZone(oldBooking.date, oldBooking.time, oldBooking.durationMinutes, TUTOR_ZONE);
   const newRangeUk = formatSlotRangeInZone(newBooking.date, newBooking.time, newBooking.durationMinutes, TUTOR_ZONE);
 
   await Promise.all([
@@ -265,8 +272,8 @@ export async function sendRescheduleEmails(oldBooking: BookingRecord, newBooking
           <h2 style="color:#B668BD;">Booking Rescheduled</h2>
           <p>Hi ${newBooking.customerName},</p>
           <p><strong>${lesson.label}</strong> has been moved:</p>
-          <p style="text-decoration:line-through;color:#9ca3af;">${oldRange}</p>
-          <p><strong>${newRangeUk}</strong> (UK time)</p>
+          <p style="text-decoration:line-through;color:#9ca3af;">${oldRangeLocal}</p>
+          <p><strong>${newRangeLocal}</strong> (${zoneLabelFor(zone)})</p>
           <p><a href="${manageUrlFor(newBooking.manageToken)}" style="color:#B668BD;">Manage this booking</a></p>
           <p style="color:#9ca3af;font-size:12px;margin-top:24px;">学无止境 — Learning Has No Limits</p>
         </div>
@@ -281,7 +288,7 @@ export async function sendRescheduleEmails(oldBooking: BookingRecord, newBooking
           <h2 style="color:#B668BD;">Student Rescheduled a Lesson</h2>
           <p><strong>Student:</strong> ${newBooking.customerName} (${newBooking.customerEmail})</p>
           <p><strong>${lesson.label}</strong> moved from:</p>
-          <p style="text-decoration:line-through;color:#9ca3af;">${oldRange}</p>
+          <p style="text-decoration:line-through;color:#9ca3af;">${oldRangeUk}</p>
           <p><strong>${newRangeUk}</strong> (UK time)</p>
         </div>
       `,

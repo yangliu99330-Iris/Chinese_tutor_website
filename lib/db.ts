@@ -34,6 +34,8 @@ export interface BookingRecord {
   notes: string | null;
   amountPaidCents: number;
   status: string;
+  /** IANA zone the customer's browser reported at booking time (e.g. "Asia/Bangkok") — used to show them their own local time in later emails. */
+  customerTimezone: string;
 }
 
 export interface BlockedSlotRecord {
@@ -83,6 +85,7 @@ export async function createBookings(input: {
   customerPhone: string;
   notes: string;
   amountPaidPerSlotCents: number;
+  customerTimezone: string;
 }): Promise<void> {
   await Promise.all(
     input.slots.map((slot) => {
@@ -90,10 +93,10 @@ export async function createBookings(input: {
       return sql`
         INSERT INTO bookings (
           stripe_session_id, stripe_payment_intent_id, manage_token, lesson_type, lesson_date, lesson_time, duration_minutes,
-          customer_name, customer_email, customer_phone, notes, amount_paid_cents
+          customer_name, customer_email, customer_phone, notes, amount_paid_cents, customer_timezone
         ) VALUES (
           ${input.stripeSessionId}, ${input.stripePaymentIntentId}, ${manageToken}, ${input.lessonType}, ${slot.date}, ${slot.time}, ${input.durationMinutes},
-          ${input.customerName}, ${input.customerEmail}, ${input.customerPhone}, ${input.notes}, ${input.amountPaidPerSlotCents}
+          ${input.customerName}, ${input.customerEmail}, ${input.customerPhone}, ${input.notes}, ${input.amountPaidPerSlotCents}, ${input.customerTimezone}
         )
         ON CONFLICT (stripe_session_id, lesson_date, lesson_time) DO NOTHING
       `;
@@ -107,7 +110,7 @@ export async function getBookingsInRange(
 ): Promise<BookingRecord[]> {
   const { rows } = await sql`
     SELECT id, stripe_session_id, manage_token, lesson_type, lesson_date::text, lesson_time, duration_minutes,
-           customer_name, customer_email, customer_phone, notes, amount_paid_cents, status
+           customer_name, customer_email, customer_phone, notes, amount_paid_cents, status, customer_timezone
     FROM bookings
     WHERE lesson_date >= ${startDate} AND lesson_date <= ${endDate}
     ORDER BY lesson_date, lesson_time
@@ -126,6 +129,7 @@ export async function getBookingsInRange(
     notes: r.notes,
     amountPaidCents: r.amount_paid_cents,
     status: r.status,
+    customerTimezone: r.customer_timezone || "Europe/London",
   }));
 }
 
@@ -143,6 +147,7 @@ interface BookingRow {
   notes: string | null;
   amount_paid_cents: number;
   status: string;
+  customer_timezone: string | null;
 }
 
 function mapBookingRow(r: BookingRow): BookingRecord {
@@ -160,11 +165,12 @@ function mapBookingRow(r: BookingRow): BookingRecord {
     notes: r.notes,
     amountPaidCents: r.amount_paid_cents,
     status: r.status,
+    customerTimezone: r.customer_timezone || "Europe/London",
   };
 }
 
 const BOOKING_COLUMNS = `id, stripe_session_id, manage_token, lesson_type, lesson_date::text, lesson_time, duration_minutes,
-           customer_name, customer_email, customer_phone, notes, amount_paid_cents, status`;
+           customer_name, customer_email, customer_phone, notes, amount_paid_cents, status, customer_timezone`;
 
 /** Looks up a single booking by its customer-facing manage link token. */
 export async function getBookingByToken(token: string): Promise<BookingRecord | null> {

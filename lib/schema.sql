@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   notes TEXT,
   amount_paid_cents INTEGER NOT NULL,
   status TEXT NOT NULL DEFAULT 'confirmed',
+  customer_timezone TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (stripe_session_id, lesson_date, lesson_time)
 );
@@ -28,12 +29,13 @@ CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings (lesson_date);
 CREATE INDEX IF NOT EXISTS idx_bookings_payment_intent ON bookings (stripe_payment_intent_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_manage_token ON bookings (manage_token);
 
--- Run these two ALTERs (one at a time) if the `bookings` table already exists
+-- Run these ALTERs (one at a time) if the `bookings` table already exists
 -- from before the cancel/reschedule/refund feature was added:
 -- ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
 -- ALTER TABLE bookings ADD COLUMN IF NOT EXISTS manage_token TEXT;
 -- CREATE INDEX IF NOT EXISTS idx_bookings_payment_intent ON bookings (stripe_payment_intent_id);
 -- CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_manage_token ON bookings (manage_token);
+-- ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_timezone TEXT;
 
 CREATE TABLE IF NOT EXISTS blocked_slots (
   id SERIAL PRIMARY KEY,
