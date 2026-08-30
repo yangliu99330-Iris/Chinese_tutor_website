@@ -7,6 +7,7 @@ import TimeSlotGrid from "@/components/booking/TimeSlotGrid";
 import { formatTimeLabel } from "@/lib/availability";
 import { detectCustomerZone, TUTOR_ZONE, zoneToUk } from "@/lib/timezone";
 import { useLocalAvailability } from "@/lib/useLocalAvailability";
+import TimezoneIndicator from "@/components/booking/TimezoneIndicator";
 
 interface BookingInfo {
   lessonLabel: string;
@@ -169,6 +170,8 @@ export default function ManageBooking({ token }: { token: string }) {
           {formatRange(booking.date, booking.time, booking.durationMinutes, customerZone)}) will be released once
           confirmed.
         </p>
+
+        <TimezoneIndicator zone={customerZone} />
 
         <div className="grid lg:grid-cols-2 gap-6 items-start">
           <Calendar

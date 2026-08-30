@@ -6,6 +6,7 @@ import TimeSlotGrid from "./TimeSlotGrid";
 import SlotActionModal from "./SlotActionModal";
 import SelectionSummary from "./SelectionSummary";
 import CheckoutForm from "./CheckoutForm";
+import TimezoneIndicator from "./TimezoneIndicator";
 import { RecurrenceFrequency, SlotSelection } from "@/lib/availability";
 import { getLessonType, LessonTypeId } from "@/lib/pricing";
 import { detectCustomerZone, ukToZone, zoneToUk } from "@/lib/timezone";
@@ -108,6 +109,8 @@ export default function BookingFlow() {
 
   return (
     <div>
+      <TimezoneIndicator zone={customerZone} />
+
       {skippedNotice && (
         <div
           className="mb-6 rounded-xl px-4 py-3 text-sm"

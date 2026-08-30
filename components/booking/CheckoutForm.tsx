@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatTimeLabel, parseDateKey, SlotSelection } from "@/lib/availability";
 import { formatPrice, getLessonType, LessonTypeId } from "@/lib/pricing";
 import { detectCustomerZone, ukRangeToZone } from "@/lib/timezone";
+import TimezoneIndicator from "./TimezoneIndicator";
 
 interface CheckoutFormProps {
   lessonType: LessonTypeId;
@@ -143,6 +144,7 @@ export default function CheckoutForm({ lessonType, slots, customerZone, onBack }
           Order Summary
         </p>
         <p className="font-semibold text-gray-900 mb-3">{lesson.label}</p>
+        <TimezoneIndicator zone={customerZone} />
         <ul className="flex flex-col gap-2 mb-4 max-h-64 overflow-y-auto">
           {slots.map((slot, i) => {
             const { start, end } = customerZone

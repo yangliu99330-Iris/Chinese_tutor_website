@@ -38,6 +38,27 @@ export function zoneToUk(date: string, time: string, zone: string): DateTimeKey 
   return convert(date, time, zone, TUTOR_ZONE);
 }
 
+/**
+ * Human-friendly description of a detected zone, for the "we've matched your
+ * location" confirmation shown on the booking page — not used in any actual
+ * date/time conversion.
+ */
+export function describeZone(zone: string): { label: string; currentTime: string } {
+  const now: DateTime = DateTime.now().setZone(zone);
+  const city = zone.includes("/") ? zone.split("/").pop()!.replace(/_/g, " ") : zone;
+
+  const shortOffset = now.offsetNameShort;
+  const fallbackOffset = now.toFormat("ZZ");
+  const currentTime = now.toFormat("h:mm a, ccc d LLL");
+  const valid = now.isValid;
+
+  const offset = shortOffset ?? fallbackOffset;
+  return {
+    label: valid && offset ? `${city} (${offset})` : city,
+    currentTime: valid ? currentTime : "",
+  };
+}
+
 /** Converts a UK slot's full start+end range into `zone`, computing the end from duration in `zone` (not UK) so DST transitions during the lesson can't skew it. */
 export function ukRangeToZone(
   date: string,
