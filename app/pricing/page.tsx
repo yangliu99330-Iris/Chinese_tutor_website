@@ -14,7 +14,8 @@ export const metadata: Metadata = {
     "Transparent, per-lesson pricing for Mandarin Chinese and Chinese Dance lessons with Miss Yang.",
 };
 
-const languageLessons = LESSON_TYPES.filter((l) => l.id !== "dance");
+const languageLessons = LESSON_TYPES.filter((l) => l.id !== "dance" && l.id !== "trial");
+const trialLessons = LESSON_TYPES.filter((l) => l.id === "trial");
 const danceLessons = LESSON_TYPES.filter((l) => l.id === "dance");
 
 const faqs = [
@@ -140,7 +141,7 @@ export default function Pricing() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
             {languageLessons.map((lesson) => (
               <PricingCard
                 key={lesson.id}
@@ -149,6 +150,21 @@ export default function Pricing() {
                 highlighted={lesson.id === "private"}
               />
             ))}
+          </div>
+
+          {/* Trial sits on its own row, set apart from the regular lessons */}
+          <div className="mt-16 pt-12 border-t" style={{ borderColor: "#F8ECE1" }}>
+            <p
+              className="text-center text-sm font-semibold uppercase tracking-widest mb-8"
+              style={{ color: "#B668BD" }}
+            >
+              New to Miss Yang?
+            </p>
+            <div className="max-w-sm mx-auto">
+              {trialLessons.map((lesson) => (
+                <PricingCard key={lesson.id} lesson={lesson} accent="#CD8136" />
+              ))}
+            </div>
           </div>
         </div>
       </section>

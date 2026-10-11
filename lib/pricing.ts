@@ -26,15 +26,8 @@ export const LESSON_TYPES: LessonType[] = [
     description: "A focused 30-minute one-on-one lesson — ideal for a quick practice session or a tight schedule.",
   },
   {
-    id: "trial",
-    label: "Trial Lesson",
-    priceCents: 1099,
-    durationMinutes: 30,
-    description: "For new students: a 30-minute introductory first lesson — a low-commitment way to get started.",
-  },
-  {
     id: "young-pupils",
-    label: "Lesson for Young Pupils",
+    label: "Young Pupil Lesson",
     priceCents: 1899,
     durationMinutes: 45,
     description: "A 45-minute lesson paced and structured for younger learners.",
@@ -52,6 +45,13 @@ export const LESSON_TYPES: LessonType[] = [
     priceCents: 2900,
     durationMinutes: 45,
     description: "Including Chinese Classical Dance, Chinese Folk Dance, Ballet, or Modern Dance.",
+  },
+  {
+    id: "trial",
+    label: "Trial Lesson",
+    priceCents: 1099,
+    durationMinutes: 30,
+    description: "For new students: a 30-minute introductory first lesson — a low-commitment way to get started.",
   },
 ];
 

@@ -39,11 +39,14 @@ export default function SelectionSummary({
       </p>
       <div className="flex flex-col gap-2 mb-6">
         {LESSON_TYPES.map((type) => (
+          <div key={type.id} className={type.id === "trial" ? "mt-4 pt-4 border-t" : undefined} style={type.id === "trial" ? { borderColor: "#F8ECE1" } : undefined}>
+            {type.id === "trial" && (
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">New students</p>
+            )}
           <button
-            key={type.id}
             type="button"
             onClick={() => onChangeLessonType(type.id)}
-            className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-colors text-left ${
+            className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-colors text-left ${
               lessonType === type.id ? "text-white" : "text-gray-600 hover:bg-gray-50"
             }`}
             style={
@@ -60,6 +63,7 @@ export default function SelectionSummary({
             </span>
             <span className="shrink-0">{formatPrice(type.priceCents)}</span>
           </button>
+          </div>
         ))}
       </div>
 
