@@ -1,4 +1,4 @@
-export type LessonTypeId = "private" | "trial" | "young-pupils" | "group" | "dance";
+export type LessonTypeId = "private" | "express" | "trial" | "young-pupils" | "group" | "dance";
 
 export interface LessonType {
   id: LessonTypeId;
@@ -19,11 +19,18 @@ export const LESSON_TYPES: LessonType[] = [
     description: "A focused 60-minute one-on-one Mandarin lesson tailored to your goals.",
   },
   {
-    id: "trial",
-    label: "Trial Lesson",
+    id: "express",
+    label: "Express Lesson",
     priceCents: 1299,
     durationMinutes: 30,
-    description: "A 30-minute introductory lesson — a low-commitment way to get started.",
+    description: "A focused 30-minute one-on-one lesson — ideal for a quick practice session or a tight schedule.",
+  },
+  {
+    id: "trial",
+    label: "Trial Lesson",
+    priceCents: 1099,
+    durationMinutes: 30,
+    description: "For new students: a 30-minute introductory first lesson — a low-commitment way to get started.",
   },
   {
     id: "young-pupils",

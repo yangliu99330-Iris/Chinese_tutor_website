@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "The Trial Lesson is a low-cost 30-minute introductory session rather than a free call — it lets you experience a real lesson with Miss Yang before committing to regular sessions. If you would like to chat first, message Miss Yang on WhatsApp, WeChat, or email — details on the Contact page.",
+    a: "The Trial Lesson is a low-cost 30-minute introductory session for new students rather than a free call — it lets you experience a real lesson with Miss Yang before committing to regular sessions. Already a student and want a shorter lesson? The Express Lesson is the same 30 minutes at the regular rate. If you would like to chat first, message Miss Yang on WhatsApp, WeChat, or email — details on the Contact page.",
   },
 ];
 
@@ -140,7 +140,7 @@ export default function Pricing() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {languageLessons.map((lesson) => (
               <PricingCard
                 key={lesson.id}
