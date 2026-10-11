@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatTimeLabel, parseDateKey, toDateKey } from "@/lib/availability";
+import { addDaysToKey, firstWeekdayOnOrAfter, formatTimeLabel, parseDateKey, toDateKey } from "@/lib/availability";
 
 interface RecurringBlock {
   id: number;
@@ -9,6 +9,21 @@ interface RecurringBlock {
   startTime: string;
   endTime: string;
   reason: string | null;
+  startDate: string | null;
+  endDate: string | null;
+}
+
+type UntilMode = "never" | "date" | "weeks";
+
+function formatDay(dateKey: string): string {
+  return parseDateKey(dateKey).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function describeRange(b: RecurringBlock): string {
+  if (b.startDate && b.endDate) return `${formatDay(b.startDate)} – ${formatDay(b.endDate)}`;
+  if (b.startDate) return `from ${formatDay(b.startDate)}, no end date`;
+  if (b.endDate) return `until ${formatDay(b.endDate)}`;
+  return "every week, no start or end date";
 }
 
 interface SlotRow {
@@ -23,6 +38,10 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
   const [date, setDate] = useState(() => toDateKey(new Date()));
   const [slots, setSlots] = useState<SlotRow[]>([{ start: "09:00", end: "10:00" }]);
   const [repeat, setRepeat] = useState<"none" | "weekly">("none");
+  const [weekday, setWeekday] = useState<number | null>(null); // null = same weekday as the start date
+  const [untilMode, setUntilMode] = useState<UntilMode>("weeks");
+  const [untilDate, setUntilDate] = useState("");
+  const [weeks, setWeeks] = useState(5);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +66,14 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
       const res = await fetch("/api/admin/block", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, slots, repeat, reason: repeat === "weekly" ? "Weekly block" : "Blocked by admin" }),
+        body: JSON.stringify({
+          date,
+          slots,
+          repeat,
+          weekday: effectiveWeekday,
+          until: untilMode === "date" ? { mode: "date", date: untilDate } : untilMode === "weeks" ? { mode: "weeks", weeks } : { mode: "never" },
+          reason: repeat === "weekly" ? "Weekly block" : "Blocked by admin",
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -67,7 +93,16 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
     onSaved();
   }
 
-  const weekdayName = WEEKDAY_NAMES[parseDateKey(date).getDay()];
+  const effectiveWeekday = weekday ?? parseDateKey(date).getDay();
+  const firstDate = date ? firstWeekdayOnOrAfter(date, effectiveWeekday) : "";
+  const lastDate =
+    untilMode === "date" ? untilDate : untilMode === "weeks" && firstDate ? addDaysToKey(firstDate, 7 * (Math.max(weeks, 1) - 1)) : "";
+  const summary =
+    repeat === "weekly" && firstDate
+      ? `Blocks every ${WEEKDAY_NAMES[effectiveWeekday]} from ${formatDay(firstDate)}${
+          lastDate ? ` to ${formatDay(lastDate)}` : ", with no end date"
+        }. Earlier dates are not affected.`
+      : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
@@ -80,7 +115,9 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
           Close off time that would otherwise be bookable. Existing bookings are not cancelled.
         </p>
 
-        <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Date</label>
+        <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">
+          {repeat === "weekly" ? "Start date" : "Date"}
+        </label>
         <input
           type="date"
           value={date}
@@ -140,8 +177,67 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
           style={{ borderColor: "#F8ECE1" }}
         >
           <option value="none">Does not repeat (this date only)</option>
-          <option value="weekly">Weekly (every {weekdayName})</option>
+          <option value="weekly">Weekly</option>
         </select>
+
+        {repeat === "weekly" && (
+          <div className="rounded-lg p-3 mb-4" style={{ backgroundColor: "#FCF9F5", border: "1px solid #F8ECE1" }}>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">
+              Day of week
+            </label>
+            <select
+              value={effectiveWeekday}
+              onChange={(e) => setWeekday(Number(e.target.value))}
+              className="w-full border rounded-lg px-3 py-2 text-sm mb-3 bg-white"
+              style={{ borderColor: "#F8ECE1" }}
+            >
+              {WEEKDAY_NAMES.map((name, i) => (
+                <option key={name} value={i}>
+                  {name}
+                </option>
+              ))}
+            </select>
+
+            <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Until</label>
+            <select
+              value={untilMode}
+              onChange={(e) => setUntilMode(e.target.value as UntilMode)}
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
+              style={{ borderColor: "#F8ECE1" }}
+            >
+              <option value="weeks">For a number of weeks</option>
+              <option value="date">Until a date (inclusive)</option>
+              <option value="never">No end date</option>
+            </select>
+
+            {untilMode === "weeks" && (
+              <div className="flex items-center gap-2 mt-3">
+                <input
+                  type="number"
+                  min={1}
+                  max={520}
+                  value={weeks}
+                  onChange={(e) => setWeeks(Number(e.target.value))}
+                  className="w-24 border rounded-lg px-3 py-2 text-sm bg-white"
+                  style={{ borderColor: "#F8ECE1" }}
+                />
+                <span className="text-sm text-gray-500">weeks (one block per week)</span>
+              </div>
+            )}
+            {untilMode === "date" && (
+              <input
+                type="date"
+                value={untilDate}
+                min={firstDate || undefined}
+                onChange={(e) => setUntilDate(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-white mt-3"
+                style={{ borderColor: "#F8ECE1" }}
+              />
+            )}
+
+            {summary && <p className="text-xs text-gray-500 mt-3">{summary}</p>}
+          </div>
+        )}
 
         {error && (
           <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ backgroundColor: "#FEF2F2", color: "#B91C1C" }}>
@@ -181,6 +277,7 @@ export default function BlockTimeModal({ onClose, onSaved }: { onClose: () => vo
                 <li key={b.id} className="flex items-center justify-between text-sm text-gray-600">
                   <span>
                     {WEEKDAY_NAMES[b.weekday]} · {formatTimeLabel(b.startTime)}–{formatTimeLabel(b.endTime)}
+                    <span className="block text-xs text-gray-400">{describeRange(b)}</span>
                   </span>
                   <button
                     type="button"

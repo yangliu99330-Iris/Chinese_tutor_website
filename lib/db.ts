@@ -38,13 +38,19 @@ export interface BookingRecord {
   customerTimezone: string;
 }
 
-/** A weekly-repeating block (e.g. "every Tuesday 14:00-15:00"); weekday 0 = Sunday. */
+/**
+ * A weekly-repeating block (e.g. "every Wednesday 16:00-17:00"); weekday 0 = Sunday.
+ * startDate/endDate (inclusive, yyyy-mm-dd) bound when it applies; null means
+ * unbounded on that side (rows created before the bounds existed have both null).
+ */
 export interface RecurringBlock {
   id: number;
   weekday: number;
   startTime: string;
   endTime: string;
   reason: string | null;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export interface BlockedSlotRecord {
@@ -343,9 +349,12 @@ export async function getRecurringBlocks(): Promise<RecurringBlock[]> {
     start_time: string;
     end_time: string;
     reason: string | null;
+    start_date: string | null;
+    end_date: string | null;
   }>`
-    SELECT id, weekday, start_time, end_time, reason FROM recurring_blocks
-    ORDER BY weekday, start_time
+    SELECT id, weekday, start_time, end_time, reason, start_date::text, end_date::text
+    FROM recurring_blocks
+    ORDER BY weekday, start_date NULLS FIRST, start_time
   `;
   return rows.map((r) => ({
     id: r.id,
@@ -353,6 +362,8 @@ export async function getRecurringBlocks(): Promise<RecurringBlock[]> {
     startTime: r.start_time,
     endTime: r.end_time,
     reason: r.reason,
+    startDate: r.start_date,
+    endDate: r.end_date,
   }));
 }
 
@@ -361,10 +372,12 @@ export async function addRecurringBlock(input: {
   startTime: string;
   endTime: string;
   reason: string;
+  startDate: string | null;
+  endDate: string | null;
 }): Promise<void> {
   await sql`
-    INSERT INTO recurring_blocks (weekday, start_time, end_time, reason)
-    VALUES (${input.weekday}, ${input.startTime}, ${input.endTime}, ${input.reason})
+    INSERT INTO recurring_blocks (weekday, start_time, end_time, reason, start_date, end_date)
+    VALUES (${input.weekday}, ${input.startTime}, ${input.endTime}, ${input.reason}, ${input.startDate}, ${input.endDate})
   `;
 }
 
@@ -395,6 +408,9 @@ function expandRecurringBlocks(
   while (toDateKey(cursor) <= endDate) {
     const dateKey = toDateKey(cursor);
     for (const b of byWeekday.get(cursor.getDay()) ?? []) {
+      // Outside the block's own start/end dates it simply doesn't apply.
+      if (b.startDate && dateKey < b.startDate) continue;
+      if (b.endDate && dateKey > b.endDate) continue;
       const list = byDate.get(dateKey) ?? [];
       list.push({ id: b.id, startMinutes: timeToMinutes(b.startTime), endMinutes: timeToMinutes(b.endTime) });
       byDate.set(dateKey, list);

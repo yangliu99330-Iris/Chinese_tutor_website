@@ -35,6 +35,19 @@ export function parseDateKey(dateKey: string): Date {
   return new Date(y, m - 1, d);
 }
 
+export function addDaysToKey(dateKey: string, days: number): string {
+  const d = parseDateKey(dateKey);
+  d.setDate(d.getDate() + days);
+  return toDateKey(d);
+}
+
+/** The first date on or after `dateKey` that falls on `weekday` (0 = Sunday). */
+export function firstWeekdayOnOrAfter(dateKey: string, weekday: number): string {
+  const d = parseDateKey(dateKey);
+  const diff = (weekday - d.getDay() + 7) % 7;
+  return addDaysToKey(dateKey, diff);
+}
+
 export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;

@@ -93,7 +93,13 @@ CREATE TABLE IF NOT EXISTS recurring_blocks (
   start_time TEXT NOT NULL,
   end_time TEXT NOT NULL,
   reason TEXT,
+  start_date DATE,   -- first day it applies (inclusive); null = no start bound
+  end_date DATE,     -- last day it applies (inclusive); null = repeats forever
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- If recurring_blocks already exists from before start_date/end_date were added:
+-- ALTER TABLE recurring_blocks ADD COLUMN IF NOT EXISTS start_date DATE;
+-- ALTER TABLE recurring_blocks ADD COLUMN IF NOT EXISTS end_date DATE;
 
 CREATE INDEX IF NOT EXISTS idx_recurring_blocks_weekday ON recurring_blocks (weekday);

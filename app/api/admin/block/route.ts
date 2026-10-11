@@ -7,7 +7,7 @@ import {
   removeRecurringBlock,
   unblockSlot,
 } from "@/lib/db";
-import { parseDateKey } from "@/lib/availability";
+import { addDaysToKey, firstWeekdayOnOrAfter, parseDateKey } from "@/lib/availability";
 
 interface SlotInput {
   start: string;
@@ -22,8 +22,11 @@ export async function GET() {
 /**
  * Two shapes:
  *  - { date, time, reason }            single-click block of one 15-min slot (unchanged)
- *  - { date, slots: [{start,end}], repeat: "none" | "weekly", reason }
- *      a time range; "weekly" repeats on that date's weekday forever (until removed)
+ *  - { date, slots: [{start,end}], repeat: "none" | "weekly", reason,
+ *      weekday?: 0-6, until?: { mode: "never" } | { mode: "date", date } | { mode: "weeks", weeks } }
+ *      a time range. "weekly" starts at the first `weekday` (default: date's own weekday)
+ *      on or after `date` and never touches earlier dates; `until` bounds the end
+ *      (inclusive). "weeks": N weeks = N occurrences.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -46,9 +49,37 @@ export async function POST(req: NextRequest) {
   }
 
   if (repeat === "weekly") {
-    const weekday = parseDateKey(date).getDay();
+    const weekdayInput = body.weekday;
+    const weekday =
+      Number.isInteger(weekdayInput) && weekdayInput >= 0 && weekdayInput <= 6
+        ? (weekdayInput as number)
+        : parseDateKey(date).getDay();
+    const firstDate = firstWeekdayOnOrAfter(date, weekday);
+
+    let endDate: string | null = null;
+    const until = body.until;
+    if (until?.mode === "date") {
+      if (!until.date || until.date < firstDate) {
+        return NextResponse.json({ error: "The end date is before the first blocked day." }, { status: 400 });
+      }
+      endDate = until.date;
+    } else if (until?.mode === "weeks") {
+      const weeks = Number(until.weeks);
+      if (!Number.isInteger(weeks) || weeks < 1 || weeks > 520) {
+        return NextResponse.json({ error: "Number of weeks must be between 1 and 520." }, { status: 400 });
+      }
+      endDate = addDaysToKey(firstDate, 7 * (weeks - 1));
+    }
+
     for (const s of slots) {
-      await addRecurringBlock({ weekday, startTime: s.start, endTime: s.end, reason: label });
+      await addRecurringBlock({
+        weekday,
+        startTime: s.start,
+        endTime: s.end,
+        reason: label,
+        startDate: firstDate,
+        endDate,
+      });
     }
   } else {
     for (const s of slots) {
