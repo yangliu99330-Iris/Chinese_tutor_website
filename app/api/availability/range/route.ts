@@ -19,6 +19,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid query params." }, { status: 400 });
   }
 
+  // Not a booking limit — just keeps one request from asking for years of dates.
+  const spanDays = (parseDateKey(end).getTime() - parseDateKey(start).getTime()) / 86_400_000;
+  if (!(spanDays >= 0) || spanDays > 100) {
+    return NextResponse.json({ error: "Date range too large." }, { status: 400 });
+  }
+
   const excluded = await getExcludedSlots(start, end);
 
   const availability: Record<string, string[]> = {};

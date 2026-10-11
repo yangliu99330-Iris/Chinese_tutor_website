@@ -40,7 +40,8 @@ export default function BookingFlow() {
 
   const { localTimesByDate, availableLocalDates, loading: availabilityLoading } = useLocalAvailability(
     durationMinutes,
-    customerZone
+    customerZone,
+    viewMonth
   );
 
   const timesForSelectedDate = selectedDate ? localTimesByDate.get(selectedDate) ?? [] : [];

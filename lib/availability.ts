@@ -14,7 +14,6 @@ export interface SlotSelection {
 // bookable until a window is added.
 
 export const SLOT_INTERVAL_MINUTES = 15;
-export const BOOKING_WINDOW_DAYS = 45;
 export const MIN_NOTICE_HOURS = 12;
 /** Matches the site's advertised "free reschedule up to 24 hrs before" policy. */
 export const RESCHEDULE_MIN_NOTICE_HOURS = 24;
@@ -54,12 +53,12 @@ export function formatTimeLabel(time: string): string {
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-function isWithinBookingWindow(date: Date): boolean {
+// There is deliberately no upper limit on how far ahead a lesson can be
+// booked — only dates that have already passed are rejected.
+function isNotInPast(date: Date): boolean {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const maxDate = new Date(startOfToday);
-  maxDate.setDate(maxDate.getDate() + BOOKING_WINDOW_DAYS);
-  return date >= startOfToday && date <= maxDate;
+  return date >= startOfToday;
 }
 
 export interface OccupiedRange {
@@ -100,7 +99,7 @@ function mergeRanges(ranges: OccupiedRange[]): OccupiedRange[] {
 export function isDateBookable(date: Date, fullyBlockedDates: Set<string>, hasOpenWindow: boolean): boolean {
   const dateKey = toDateKey(date);
   if (fullyBlockedDates.has(dateKey)) return false;
-  if (!isWithinBookingWindow(date)) return false;
+  if (!isNotInPast(date)) return false;
   return hasOpenWindow;
 }
 

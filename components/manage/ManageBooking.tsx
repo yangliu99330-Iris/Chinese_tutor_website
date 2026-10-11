@@ -68,7 +68,8 @@ export default function ManageBooking({ token }: { token: string }) {
 
   const { localTimesByDate, availableLocalDates, loading: availabilityLoading } = useLocalAvailability(
     booking?.durationMinutes ?? 60,
-    customerZone
+    customerZone,
+    viewMonth
   );
   const timesForNewDate = newDate ? localTimesByDate.get(newDate) ?? [] : [];
 
