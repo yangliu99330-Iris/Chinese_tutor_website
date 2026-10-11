@@ -38,6 +38,15 @@ export interface BookingRecord {
   customerTimezone: string;
 }
 
+/** A weekly-repeating block (e.g. "every Tuesday 14:00-15:00"); weekday 0 = Sunday. */
+export interface RecurringBlock {
+  id: number;
+  weekday: number;
+  startTime: string;
+  endTime: string;
+  reason: string | null;
+}
+
 export interface BlockedSlotRecord {
   id: number;
   date: string;
@@ -327,12 +336,109 @@ function expandAvailabilityWindows(
   return openRanges;
 }
 
+export async function getRecurringBlocks(): Promise<RecurringBlock[]> {
+  const { rows } = await sql<{
+    id: number;
+    weekday: number;
+    start_time: string;
+    end_time: string;
+    reason: string | null;
+  }>`
+    SELECT id, weekday, start_time, end_time, reason FROM recurring_blocks
+    ORDER BY weekday, start_time
+  `;
+  return rows.map((r) => ({
+    id: r.id,
+    weekday: r.weekday,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    reason: r.reason,
+  }));
+}
+
+export async function addRecurringBlock(input: {
+  weekday: number;
+  startTime: string;
+  endTime: string;
+  reason: string;
+}): Promise<void> {
+  await sql`
+    INSERT INTO recurring_blocks (weekday, start_time, end_time, reason)
+    VALUES (${input.weekday}, ${input.startTime}, ${input.endTime}, ${input.reason})
+  `;
+}
+
+export async function removeRecurringBlock(id: number): Promise<void> {
+  await sql`DELETE FROM recurring_blocks WHERE id = ${id}`;
+}
+
+export interface RecurringBlockRange extends OccupiedRange {
+  /** id of the weekly rule this range came from, so the admin can remove it */
+  id: number;
+}
+
+/** Expands weekly blocks into per-date minute ranges across [startDate, endDate]. */
+function expandRecurringBlocks(
+  startDate: string,
+  endDate: string,
+  blocks: RecurringBlock[]
+): Map<string, RecurringBlockRange[]> {
+  const byDate = new Map<string, RecurringBlockRange[]>();
+  const byWeekday = new Map<number, RecurringBlock[]>();
+  for (const b of blocks) {
+    const list = byWeekday.get(b.weekday) ?? [];
+    list.push(b);
+    byWeekday.set(b.weekday, list);
+  }
+
+  const cursor = parseDateKey(startDate);
+  while (toDateKey(cursor) <= endDate) {
+    const dateKey = toDateKey(cursor);
+    for (const b of byWeekday.get(cursor.getDay()) ?? []) {
+      const list = byDate.get(dateKey) ?? [];
+      list.push({ id: b.id, startMinutes: timeToMinutes(b.startTime), endMinutes: timeToMinutes(b.endTime) });
+      byDate.set(dateKey, list);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return byDate;
+}
+
+/** Weekly blocks expanded for the admin calendar, so it can paint them as blocked and offer removal. */
+export async function getRecurringBlockRangesInRange(
+  startDate: string,
+  endDate: string
+): Promise<Map<string, RecurringBlockRange[]>> {
+  return expandRecurringBlocks(startDate, endDate, await getRecurringBlocks());
+}
+
+/**
+ * Blocks every 15-minute slot in [startTime, endTime) on `date` as ordinary
+ * one-off blocks, skipping slots that are already blocked. Start is rounded
+ * down and end rounded up to the slot grid so the admin calendar cells line up.
+ */
+export async function blockTimeRange(date: string, startTime: string, endTime: string, reason: string): Promise<void> {
+  const start = Math.floor(timeToMinutes(startTime) / SLOT_INTERVAL_MINUTES) * SLOT_INTERVAL_MINUTES;
+  const end = Math.ceil(timeToMinutes(endTime) / SLOT_INTERVAL_MINUTES) * SLOT_INTERVAL_MINUTES;
+  for (let m = start; m < end; m += SLOT_INTERVAL_MINUTES) {
+    const time = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    await sql`
+      INSERT INTO blocked_slots (blocked_date, blocked_time, reason)
+      SELECT ${date}::date, ${time}, ${reason}
+      WHERE NOT EXISTS (
+        SELECT 1 FROM blocked_slots WHERE blocked_date = ${date}::date AND blocked_time = ${time}
+      )
+    `;
+  }
+}
+
 /** Combines confirmed bookings + admin blocks + the tutor's configured open windows into the shape lib/availability.ts needs. */
 export async function getExcludedSlots(startDate: string, endDate: string): Promise<AvailabilityData> {
-  const [booked, blocked, windows] = await Promise.all([
+  const [booked, blocked, windows, recurringBlocks] = await Promise.all([
     getBookedSlotsInRange(startDate, endDate),
     getBlockedSlotsInRange(startDate, endDate),
     getAvailabilityWindows(),
+    getRecurringBlocks(),
   ]);
 
   const fullyBlockedDates = new Set<string>();
@@ -357,6 +463,10 @@ export async function getExcludedSlots(startDate: string, endDate: string): Prom
       const start = timeToMinutes(b.time);
       addRange(b.date, start, start + SLOT_INTERVAL_MINUTES);
     }
+  }
+
+  for (const [date, ranges] of expandRecurringBlocks(startDate, endDate, recurringBlocks)) {
+    for (const r of ranges) addRange(date, r.startMinutes, r.endMinutes);
   }
 
   const openRanges = expandAvailabilityWindows(startDate, endDate, windows);

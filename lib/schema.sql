@@ -83,3 +83,17 @@ CREATE INDEX IF NOT EXISTS idx_availability_windows_date ON availability_windows
 -- then edit/narrow it down to her real hours from the admin calendar:
 -- INSERT INTO availability_windows (weekday, start_time, end_time)
 --   SELECT d, '09:00', '18:00' FROM generate_series(0, 6) AS d;
+
+-- Weekly-repeating blocks set via "Block Time" in /admin (see
+-- lib/db.ts#getRecurringBlocks). One-off range blocks reuse blocked_slots.
+-- weekday 0 (Sun) .. 6 (Sat); repeats every week until the row is removed.
+CREATE TABLE IF NOT EXISTS recurring_blocks (
+  id SERIAL PRIMARY KEY,
+  weekday INTEGER NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_recurring_blocks_weekday ON recurring_blocks (weekday);

@@ -9,10 +9,15 @@ import {
   toDateKey,
 } from "@/lib/availability";
 import SetAvailabilityModal from "./SetAvailabilityModal";
+import BlockTimeModal from "./BlockTimeModal";
 
 interface OpenRange {
   startMinutes: number;
   endMinutes: number;
+}
+
+interface RecurringBlockRange extends OpenRange {
+  id: number;
 }
 
 interface BookingRecord {
@@ -101,9 +106,11 @@ export default function AdminCalendar() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlotRecord[]>([]);
   const [openRanges, setOpenRanges] = useState<Record<string, OpenRange[]>>({});
+  const [recurringBlocks, setRecurringBlocks] = useState<Record<string, RecurringBlockRange[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeBooking, setActiveBooking] = useState<BookingRecord | null>(null);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const weekEnd = weekDays[6];
@@ -118,6 +125,7 @@ export default function AdminCalendar() {
         setBookings(data.bookings ?? []);
         setBlockedSlots(data.blockedSlots ?? []);
         setOpenRanges(data.openRanges ?? {});
+        setRecurringBlocks(data.recurringBlocks ?? {});
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,6 +170,22 @@ export default function AdminCalendar() {
     else blockedTimeMap.set(`${b.date}T${b.time}`, b);
   }
 
+  function recurringBlockAt(dateKey: string, time: string): { block: RecurringBlockRange; isStart: boolean } | null {
+    const m = timeToMinutes(time);
+    for (const r of recurringBlocks[dateKey] ?? []) {
+      if (m >= r.startMinutes && m < r.endMinutes) {
+        return { block: r, isStart: m - r.startMinutes < SLOT_INTERVAL_MINUTES };
+      }
+    }
+    return null;
+  }
+
+  async function handleRemoveRecurringBlock(id: number) {
+    if (!window.confirm("This is a weekly repeating block. Remove it for every week?")) return;
+    await fetch(`/api/admin/block?recurring=${id}`, { method: "DELETE" });
+    refresh();
+  }
+
   async function handleBlockSlot(date: string, time: string) {
     await fetch("/api/admin/block", {
       method: "POST",
@@ -195,6 +219,14 @@ export default function AdminCalendar() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-playfair text-2xl font-bold text-gray-900">Schedule</h1>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setShowBlockModal(true)}
+            className="px-4 py-2 rounded-lg font-bold text-sm border-2"
+            style={{ borderColor: "#B668BD", color: "#B668BD" }}
+          >
+            Block Time
+          </button>
           <button
             type="button"
             onClick={() => setShowAvailabilityModal(true)}
@@ -244,7 +276,7 @@ export default function AdminCalendar() {
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded inline-block bg-gray-100 border border-gray-200" /> Closed
         </span>
-        <span>Click an open slot to block it. Click a booking for details.</span>
+        <span>Click an open slot to block it (or use Block Time to repeat weekly). Click a booking for details.</span>
       </div>
 
       <div className="overflow-x-auto bg-white rounded-2xl border" style={{ borderColor: "#F8ECE1" }}>
@@ -275,6 +307,7 @@ export default function AdminCalendar() {
                 const bookingHit = bookingAt(dateKey, time);
                 const blocked = blockedTimeMap.get(key);
                 const dayFullyBlocked = fullyBlockedDates.has(dateKey);
+                const recurringHit = recurringBlockAt(dateKey, time);
                 const open = isOpenAt(dateKey, time);
 
                 let content: React.ReactNode = null;
@@ -299,6 +332,12 @@ export default function AdminCalendar() {
                     content = <span className="text-gray-500 text-[10px]">Blocked</span>;
                     onClick = () => handleUnblockSlot(blocked.id);
                   }
+                } else if (recurringHit) {
+                  cellStyle = { backgroundColor: "#e5e7eb" };
+                  content = recurringHit.isStart ? (
+                    <span className="text-gray-500 text-[10px]">Blocked · weekly</span>
+                  ) : null;
+                  onClick = () => handleRemoveRecurringBlock(recurringHit.block.id);
                 } else if (!open) {
                   cellStyle = { backgroundColor: "#F9FAFB" };
                   disabled = true;
@@ -366,6 +405,10 @@ export default function AdminCalendar() {
             </div>
           </div>
         </div>
+      )}
+
+      {showBlockModal && (
+        <BlockTimeModal onClose={() => setShowBlockModal(false)} onSaved={refresh} />
       )}
 
       {showAvailabilityModal && (
