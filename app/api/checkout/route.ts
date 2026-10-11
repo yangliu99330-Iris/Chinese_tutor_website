@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { getLessonType, LessonTypeId } from "@/lib/pricing";
+import { calculateOrderPricing, getLessonType, LessonTypeId } from "@/lib/pricing";
 import {
   formatTimeLabel,
   isSlotAvailable,
@@ -72,6 +72,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Computed server-side from the slot count — never trust a client-sent price.
+  const pricing = calculateOrderPricing(lesson.priceCents, slots.length);
+
   const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 
   try {
@@ -84,9 +87,12 @@ export async function POST(req: NextRequest) {
           quantity: slots.length,
           price_data: {
             currency: "gbp",
-            unit_amount: lesson.priceCents,
+            unit_amount: pricing.unitCents,
             product_data: {
-              name: lesson.label,
+              name:
+                pricing.discountPercent > 0
+                  ? `${lesson.label} (${pricing.discountPercent}% off for ${slots.length} lessons)`
+                  : lesson.label,
               description: slotsSummary,
             },
           },

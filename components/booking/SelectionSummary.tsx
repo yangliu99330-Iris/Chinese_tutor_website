@@ -1,7 +1,14 @@
 "use client";
 
 import { formatTimeLabel, minutesToTime, parseDateKey, SlotSelection, timeToMinutes } from "@/lib/availability";
-import { formatPrice, LESSON_TYPES, LessonTypeId } from "@/lib/pricing";
+import {
+  BULK_DISCOUNT_MIN_LESSONS,
+  BULK_DISCOUNT_PERCENT,
+  calculateOrderPricing,
+  formatPrice,
+  LESSON_TYPES,
+  LessonTypeId,
+} from "@/lib/pricing";
 import { ukRangeToZone } from "@/lib/timezone";
 
 interface SelectionSummaryProps {
@@ -23,7 +30,7 @@ export default function SelectionSummary({
   onContinue,
 }: SelectionSummaryProps) {
   const lesson = LESSON_TYPES.find((l) => l.id === lessonType)!;
-  const totalCents = lesson.priceCents * slots.length;
+  const pricing = calculateOrderPricing(lesson.priceCents, slots.length);
 
   return (
     <div className="bg-white rounded-2xl border p-6 sticky top-24" style={{ borderColor: "#F8ECE1" }}>
@@ -100,13 +107,33 @@ export default function SelectionSummary({
         </ul>
       )}
 
-      <div className="flex items-center justify-between mb-5 pt-4 border-t" style={{ borderColor: "#F8ECE1" }}>
-        <span className="text-sm font-semibold text-gray-600">
-          Total ({slots.length} lesson{slots.length === 1 ? "" : "s"})
-        </span>
-        <span className="font-playfair text-2xl font-bold" style={{ color: "#B668BD" }}>
-          {formatPrice(totalCents)}
-        </span>
+      <div className="mb-5 pt-4 border-t" style={{ borderColor: "#F8ECE1" }}>
+        {pricing.discountCents > 0 && (
+          <>
+            <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
+              <span>Subtotal</span>
+              <span>{formatPrice(pricing.subtotalCents)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm font-semibold mb-2" style={{ color: "#2F855A" }}>
+              <span>{pricing.discountPercent}% off {BULK_DISCOUNT_MIN_LESSONS}+ lessons</span>
+              <span>−{formatPrice(pricing.discountCents)}</span>
+            </div>
+          </>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-gray-600">
+            Total ({slots.length} lesson{slots.length === 1 ? "" : "s"})
+          </span>
+          <span className="font-playfair text-2xl font-bold" style={{ color: "#B668BD" }}>
+            {formatPrice(pricing.totalCents)}
+          </span>
+        </div>
+        {pricing.lessonsToDiscount > 0 ? (
+          <p className="text-xs text-gray-400 mt-2">
+            Book {BULK_DISCOUNT_MIN_LESSONS} lessons in one order and save {BULK_DISCOUNT_PERCENT}% — add{" "}
+            {pricing.lessonsToDiscount} more.
+          </p>
+        ) : null}
       </div>
 
       <button

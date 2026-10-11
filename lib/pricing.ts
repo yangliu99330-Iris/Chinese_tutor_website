@@ -57,3 +57,45 @@ export function getLessonType(id: LessonTypeId): LessonType {
 export function formatPrice(cents: number): string {
   return `£${(cents / 100).toFixed(2)}`;
 }
+
+/** Booking this many lessons (of the same type) in a single order earns BULK_DISCOUNT_PERCENT off every lesson. */
+export const BULK_DISCOUNT_MIN_LESSONS = 10;
+export const BULK_DISCOUNT_PERCENT = 5;
+
+export interface OrderPricing {
+  lessonCount: number;
+  /** Price charged per lesson after any discount (this is the Stripe unit_amount). */
+  unitCents: number;
+  subtotalCents: number;
+  discountCents: number;
+  totalCents: number;
+  discountPercent: number;
+  /** How many more lessons would unlock the discount (0 once earned, or for an empty order). */
+  lessonsToDiscount: number;
+}
+
+/**
+ * Single source of truth for what an order costs — used by the booking UI and
+ * by the checkout route, so the price shown always equals the price charged.
+ * The discount is applied per lesson (rounded to the penny) so that
+ * unit price × quantity is exactly the total Stripe charges.
+ */
+export function calculateOrderPricing(listPriceCents: number, lessonCount: number): OrderPricing {
+  const qualifies = lessonCount >= BULK_DISCOUNT_MIN_LESSONS;
+  const unitCents = qualifies
+    ? Math.round((listPriceCents * (100 - BULK_DISCOUNT_PERCENT)) / 100)
+    : listPriceCents;
+  const subtotalCents = listPriceCents * lessonCount;
+  const totalCents = unitCents * lessonCount;
+
+  return {
+    lessonCount,
+    unitCents,
+    subtotalCents,
+    discountCents: subtotalCents - totalCents,
+    totalCents,
+    discountPercent: qualifies ? BULK_DISCOUNT_PERCENT : 0,
+    lessonsToDiscount:
+      lessonCount > 0 && !qualifies ? BULK_DISCOUNT_MIN_LESSONS - lessonCount : 0,
+  };
+}

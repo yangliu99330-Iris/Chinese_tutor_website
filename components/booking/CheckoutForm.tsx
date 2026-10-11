@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatTimeLabel, parseDateKey, SlotSelection } from "@/lib/availability";
-import { formatPrice, getLessonType, LessonTypeId } from "@/lib/pricing";
+import { calculateOrderPricing, formatPrice, getLessonType, LessonTypeId } from "@/lib/pricing";
 import { detectCustomerZone, ukRangeToZone } from "@/lib/timezone";
 import TimezoneIndicator from "./TimezoneIndicator";
 
@@ -23,7 +23,8 @@ export default function CheckoutForm({ lessonType, slots, customerZone, onBack }
   const [error, setError] = useState<string | null>(null);
 
   const lesson = getLessonType(lessonType);
-  const totalCents = lesson.priceCents * slots.length;
+  const pricing = calculateOrderPricing(lesson.priceCents, slots.length);
+  const totalCents = pricing.totalCents;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -166,13 +167,27 @@ export default function CheckoutForm({ lessonType, slots, customerZone, onBack }
             );
           })}
         </ul>
-        <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: "#F8ECE1" }}>
-          <span className="text-sm font-semibold text-gray-600">
-            Total ({slots.length} lesson{slots.length === 1 ? "" : "s"})
-          </span>
-          <span className="font-playfair text-2xl font-bold" style={{ color: "#B668BD" }}>
-            {formatPrice(totalCents)}
-          </span>
+        <div className="pt-4 border-t" style={{ borderColor: "#F8ECE1" }}>
+          {pricing.discountCents > 0 && (
+            <>
+              <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
+                <span>Subtotal</span>
+                <span>{formatPrice(pricing.subtotalCents)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm font-semibold mb-2" style={{ color: "#2F855A" }}>
+                <span>{pricing.discountPercent}% multi-lesson discount</span>
+                <span>−{formatPrice(pricing.discountCents)}</span>
+              </div>
+            </>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-600">
+              Total ({slots.length} lesson{slots.length === 1 ? "" : "s"})
+            </span>
+            <span className="font-playfair text-2xl font-bold" style={{ color: "#B668BD" }}>
+              {formatPrice(totalCents)}
+            </span>
+          </div>
         </div>
       </div>
     </div>

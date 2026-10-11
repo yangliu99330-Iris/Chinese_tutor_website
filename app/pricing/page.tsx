@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LESSON_TYPES, LessonType, formatPrice } from "@/lib/pricing";
+import {
+  BULK_DISCOUNT_MIN_LESSONS,
+  BULK_DISCOUNT_PERCENT,
+  LESSON_TYPES,
+  LessonType,
+  formatPrice,
+} from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Pricing | Chinese Tutor Yang",
@@ -19,6 +25,10 @@ const faqs = [
   {
     q: "How do I reschedule or cancel a lesson?",
     a: "Please provide at least 24 hours notice to reschedule at no charge. Cancellations within 24 hours may be subject to a 50% session fee.",
+  },
+  {
+    q: "Is there a discount for booking several lessons?",
+    a: `Yes — book ${BULK_DISCOUNT_MIN_LESSONS} or more lessons of the same type in a single order and ${BULK_DISCOUNT_PERCENT}% comes off every lesson automatically at checkout. The easiest way is "Select & Make Recurring" on the booking page.`,
   },
   {
     q: "Do you offer group lessons?",
@@ -110,6 +120,12 @@ export default function Pricing() {
           </h1>
           <p className="text-white/75 max-w-xl mx-auto text-lg">
             Simple, honest per-lesson pricing with no hidden fees.
+          </p>
+          <p
+            className="inline-block mt-6 px-4 py-2 rounded-full text-sm font-semibold"
+            style={{ backgroundColor: "rgba(255,255,255,0.18)", color: "white" }}
+          >
+            Book {BULK_DISCOUNT_MIN_LESSONS} lessons in one order and save {BULK_DISCOUNT_PERCENT}%
           </p>
         </div>
       </section>
