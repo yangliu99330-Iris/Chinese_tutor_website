@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addAvailabilityWindow, getAvailabilityWindows, removeAvailabilityWindow } from "@/lib/db";
-import { parseDateKey } from "@/lib/availability";
+import { addAvailabilityWindow, getAvailabilityWindows, removeAvailabilityWindow, setWeeklyHours } from "@/lib/db";
+import { addDaysToKey, parseDateKey } from "@/lib/availability";
 
 interface SlotInput {
   start: string;
@@ -12,6 +12,16 @@ export async function GET() {
   return NextResponse.json({ windows });
 }
 
+/**
+ * { date, slots: [{start,end}], repeat: "none" | "weekly",
+ *   weekdays?: number[]        // weekly: default [date's own weekday]
+ *   until?: { mode: "never" } | { mode: "date", date } | { mode: "weeks", weeks }
+ *   combine?: "replace" | "add" // weekly: default "add"
+ * }
+ * "none" opens `date` only (always additive). "weekly" starts on `date` (nothing
+ * before it is touched) and runs until `until`. "weeks": N weeks = the N*7 days
+ * starting at `date`.
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const date: string | undefined = body?.date;
@@ -27,18 +37,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Each time slot needs a start time before its end time." }, { status: 400 });
   }
 
-  const weekday = repeat === "weekly" ? parseDateKey(date).getDay() : null;
+  if (repeat === "none") {
+    await Promise.all(
+      slots.map((s) =>
+        addAvailabilityWindow({ weekday: null, specificDate: date, startTime: s.start, endTime: s.end })
+      )
+    );
+    return NextResponse.json({ ok: true });
+  }
 
-  await Promise.all(
-    slots.map((s) =>
-      addAvailabilityWindow({
-        weekday,
-        specificDate: repeat === "weekly" ? null : date,
-        startTime: s.start,
-        endTime: s.end,
-      })
-    )
-  );
+  const rawWeekdays: unknown = body.weekdays;
+  const weekdays =
+    Array.isArray(rawWeekdays) && rawWeekdays.length > 0
+      ? Array.from(new Set(rawWeekdays.map(Number)))
+      : [parseDateKey(date).getDay()];
+  if (weekdays.some((d) => !Number.isInteger(d) || d < 0 || d > 6)) {
+    return NextResponse.json({ error: "Invalid day of week." }, { status: 400 });
+  }
+
+  let endDate: string | null = null;
+  const until = body.until;
+  if (until?.mode === "date") {
+    if (!until.date || until.date < date) {
+      return NextResponse.json({ error: "The end date is before the start date." }, { status: 400 });
+    }
+    endDate = until.date;
+  } else if (until?.mode === "weeks") {
+    const weeks = Number(until.weeks);
+    if (!Number.isInteger(weeks) || weeks < 1 || weeks > 520) {
+      return NextResponse.json({ error: "Number of weeks must be between 1 and 520." }, { status: 400 });
+    }
+    endDate = addDaysToKey(date, 7 * weeks - 1);
+  }
+
+  await setWeeklyHours({
+    weekdays,
+    slots,
+    startDate: date,
+    endDate,
+    mode: body.combine === "replace" ? "replace" : "add",
+  });
 
   return NextResponse.json({ ok: true });
 }

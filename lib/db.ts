@@ -1,9 +1,11 @@
-import { sql } from "@vercel/postgres";
+import { sql, type VercelPoolClient } from "@vercel/postgres";
 import {
   AvailabilityData,
   OccupiedRange,
   SLOT_INTERVAL_MINUTES,
   SlotSelection,
+  addDaysToKey,
+  firstWeekdayOnOrAfter,
   parseDateKey,
   timeToMinutes,
   toDateKey,
@@ -18,6 +20,9 @@ export interface AvailabilityWindow {
   specificDate: string | null;
   startTime: string;
   endTime: string;
+  /** Weekly windows only: first/last date (inclusive) the window applies; null = unbounded on that side. */
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export interface BookingRecord {
@@ -270,9 +275,12 @@ export async function getAvailabilityWindows(): Promise<AvailabilityWindow[]> {
     specific_date: string | null;
     start_time: string;
     end_time: string;
+    start_date: string | null;
+    end_date: string | null;
   }>`
-    SELECT id, weekday, specific_date::text, start_time, end_time FROM availability_windows
-    ORDER BY weekday NULLS LAST, specific_date NULLS LAST, start_time
+    SELECT id, weekday, specific_date::text, start_time, end_time, start_date::text, end_date::text
+    FROM availability_windows
+    ORDER BY weekday NULLS LAST, start_date NULLS FIRST, specific_date NULLS LAST, start_time
   `;
   return rows.map((r) => ({
     id: r.id,
@@ -280,6 +288,8 @@ export async function getAvailabilityWindows(): Promise<AvailabilityWindow[]> {
     specificDate: r.specific_date,
     startTime: r.start_time,
     endTime: r.end_time,
+    startDate: r.start_date,
+    endDate: r.end_date,
   }));
 }
 
@@ -297,6 +307,100 @@ export async function addAvailabilityWindow(input: {
 
 export async function removeAvailabilityWindow(id: number): Promise<void> {
   await sql`DELETE FROM availability_windows WHERE id = ${id}`;
+}
+
+interface WeeklyWindowRow {
+  id: number;
+  start_time: string;
+  end_time: string;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+export interface WeeklyHoursChange {
+  weekdays: number[];
+  slots: { start: string; end: string }[];
+  /** First day of the period (inclusive). */
+  startDate: string;
+  /** Last day of the period (inclusive); null = no end. */
+  endDate: string | null;
+  /**
+   * "replace": on these weekdays, the new hours become the *only* weekly hours
+   *            during the period — existing weekly windows are trimmed/split
+   *            around it, so hours outside the period are left as they were.
+   * "add":     the new hours are layered on top of whatever already exists.
+   */
+  mode: "replace" | "add";
+}
+
+/**
+ * Applies a weekly-hours change using `client`. Doesn't manage the
+ * transaction itself — callers wrap it (see setWeeklyHours) so a failure
+ * part-way can't leave the schedule half-rewritten.
+ */
+export async function applyWeeklyHoursChange(
+  client: Pick<VercelPoolClient, "query">,
+  change: WeeklyHoursChange
+): Promise<void> {
+  const { startDate, endDate } = change;
+
+  for (const weekday of change.weekdays) {
+    const first = firstWeekdayOnOrAfter(startDate, weekday);
+    if (endDate !== null && first > endDate) continue; // that weekday never occurs in the period
+
+    if (change.mode === "replace") {
+      const { rows } = await client.query<WeeklyWindowRow>(
+        "SELECT id, start_time, end_time, start_date::text, end_date::text FROM availability_windows WHERE weekday = $1",
+        [weekday]
+      );
+
+      for (const r of rows) {
+        const overlaps =
+          (r.end_date === null || r.end_date >= startDate) &&
+          (endDate === null || r.start_date === null || r.start_date <= endDate);
+        if (!overlaps) continue;
+
+        await client.query("DELETE FROM availability_windows WHERE id = $1", [r.id]);
+
+        const keepsBefore = r.start_date === null || r.start_date < startDate;
+        const keepsAfter = endDate !== null && (r.end_date === null || r.end_date > endDate);
+
+        if (keepsBefore) {
+          await client.query(
+            "INSERT INTO availability_windows (weekday, start_time, end_time, start_date, end_date) VALUES ($1, $2, $3, $4, $5)",
+            [weekday, r.start_time, r.end_time, r.start_date, addDaysToKey(startDate, -1)]
+          );
+        }
+        if (keepsAfter && endDate !== null) {
+          await client.query(
+            "INSERT INTO availability_windows (weekday, start_time, end_time, start_date, end_date) VALUES ($1, $2, $3, $4, $5)",
+            [weekday, r.start_time, r.end_time, addDaysToKey(endDate, 1), r.end_date]
+          );
+        }
+      }
+    }
+
+    for (const slot of change.slots) {
+      await client.query(
+        "INSERT INTO availability_windows (weekday, start_time, end_time, start_date, end_date) VALUES ($1, $2, $3, $4, $5)",
+        [weekday, slot.start, slot.end, first, endDate]
+      );
+    }
+  }
+}
+
+export async function setWeeklyHours(change: WeeklyHoursChange): Promise<void> {
+  const client = await sql.connect();
+  try {
+    await client.query("BEGIN");
+    await applyWeeklyHoursChange(client, change);
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 /** Expands recurring (weekday) + one-off (specificDate) windows into per-date minute ranges across [startDate, endDate]. */
@@ -331,6 +435,8 @@ function expandAvailabilityWindows(
   while (toDateKey(cursor) <= endDate) {
     const dateKey = toDateKey(cursor);
     for (const w of recurringByWeekday.get(cursor.getDay()) ?? []) {
+      if (w.startDate && dateKey < w.startDate) continue;
+      if (w.endDate && dateKey > w.endDate) continue;
       addOpen(dateKey, timeToMinutes(w.startTime), timeToMinutes(w.endTime));
     }
     for (const w of oneOffByDate.get(dateKey) ?? []) {

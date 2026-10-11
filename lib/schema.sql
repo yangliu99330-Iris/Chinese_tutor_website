@@ -66,12 +66,18 @@ CREATE TABLE IF NOT EXISTS availability_windows (
   specific_date DATE,    -- set only for a one-off window
   start_time TEXT NOT NULL,
   end_time TEXT NOT NULL,
+  start_date DATE,       -- weekly windows only: first day it applies (inclusive); null = unbounded
+  end_date DATE,         -- weekly windows only: last day it applies (inclusive); null = no end
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CHECK (
     (weekday IS NOT NULL AND specific_date IS NULL) OR
     (weekday IS NULL AND specific_date IS NOT NULL)
   )
 );
+
+-- If availability_windows already exists from before start_date/end_date:
+-- ALTER TABLE availability_windows ADD COLUMN IF NOT EXISTS start_date DATE;
+-- ALTER TABLE availability_windows ADD COLUMN IF NOT EXISTS end_date DATE;
 
 CREATE INDEX IF NOT EXISTS idx_availability_windows_weekday ON availability_windows (weekday);
 CREATE INDEX IF NOT EXISTS idx_availability_windows_date ON availability_windows (specific_date);
