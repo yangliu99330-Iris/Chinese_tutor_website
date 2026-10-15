@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
 const stats = [
   { value: "200+", label: "Students Taught" },
@@ -71,6 +72,13 @@ const testimonials = [
       "Miss Yang is incredibly engaged — she quickly figures out exactly what you need and keeps lessons sharp and fun with her sense of humor.",
   },
 ];
+
+export const metadata = pageMetadata({
+  title: "Online Chinese Tutor | Mandarin & Chinese Dance Lessons",
+  description:
+    "Learn Mandarin Chinese or Chinese dance online with Miss Yang — friendly one-to-one lessons for kids, teens and adults, from complete beginner to HSK prep.",
+  path: "/",
+});
 
 export default function Home() {
   return (

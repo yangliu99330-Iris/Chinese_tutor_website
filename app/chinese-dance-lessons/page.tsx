@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/components/seo/JsonLd";
+import { courseJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Chinese Dance Lessons | Chinese Tutor Yang",
+export const metadata = pageMetadata({
+  title: "Online Chinese Dance Lessons | Classical, Folk & More",
   description:
-    "Learn Chinese classical, folk, and contemporary dance, or ballet, with Miss Yang. Open to all ages and experience levels.",
-};
+    "Learn Chinese classical, folk, and contemporary dance, or ballet, with Miss Yang. Open to all ages and experience levels. Book a lesson online.",
+  path: "/chinese-dance-lessons",
+});
 
 const danceStyles = [
   {
@@ -56,6 +58,14 @@ const benefits = [
 export default function ChineseDanceLessons() {
   return (
     <>
+      <JsonLd
+        data={courseJsonLd({
+          name: "Online Chinese Dance Lessons",
+          description:
+            "Online lessons in Chinese classical, folk and contemporary dance, or ballet, for all ages and experience levels.",
+          path: "/chinese-dance-lessons",
+        })}
+      />
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"

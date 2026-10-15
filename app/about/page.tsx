@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import JsonLd from "@/components/seo/JsonLd";
+import { aboutJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About Me | Chinese Tutor Yang",
+export const metadata = pageMetadata({
+  title: "About Miss Yang | Mandarin & Chinese Dance Teacher",
   description:
-    "Learn about Miss Yang's background, teaching philosophy, credentials, and passion for sharing Chinese language and dance.",
-};
+    "Meet Miss Yang, a Mandarin Chinese and dance teacher based in the UK: her background, her teaching approach, and what to expect from a lesson.",
+  path: "/about",
+});
 
 const pillars = [
   {
@@ -43,6 +45,7 @@ const credentials = [
 export default function About() {
   return (
     <>
+      <JsonLd data={aboutJsonLd()} />
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"

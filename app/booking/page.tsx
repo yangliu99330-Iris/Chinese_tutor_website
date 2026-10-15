@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import BookingFlow from "@/components/booking/BookingFlow";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Book a Lesson | Chinese Tutor Yang",
+export const metadata = pageMetadata({
+  title: "Book a Lesson Online | Chinese Tutor Yang",
   description:
-    "Book your Mandarin or Chinese Dance lesson with Miss Yang. Select a time that suits you directly from the calendar below.",
-};
+    "Book a Mandarin or Chinese dance lesson with Miss Yang. Pick a time from the live calendar, shown in your own timezone.",
+  path: "/booking",
+});
 
 
 export default function Booking() {

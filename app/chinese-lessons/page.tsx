@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/components/seo/JsonLd";
+import { courseJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Chinese Language Lessons | Chinese Tutor Yang",
+export const metadata = pageMetadata({
+  title: "Online Mandarin Chinese Lessons for All Levels",
   description:
-    "One-on-one Mandarin lessons for beginners to advanced learners. Conversational Chinese, HSK prep, Business Mandarin, and more.",
-};
+    "One-on-one online Mandarin lessons for beginners to advanced learners. Conversational Chinese, HSK prep, Business Mandarin, and more. Book a lesson online.",
+  path: "/chinese-lessons",
+});
 
 const courses = [
   {
@@ -85,6 +87,14 @@ const levelColors: Record<string, string> = {
 export default function ChineseLessons() {
   return (
     <>
+      <JsonLd
+        data={courseJsonLd({
+          name: "Online Mandarin Chinese Lessons",
+          description:
+            "One-on-one online Mandarin lessons for beginners to advanced learners: conversational Chinese, HSK preparation and Business Mandarin.",
+          path: "/chinese-lessons",
+        })}
+      />
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"

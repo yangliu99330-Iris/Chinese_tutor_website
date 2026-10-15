@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import {
   BULK_DISCOUNT_MIN_LESSONS,
@@ -7,12 +6,14 @@ import {
   LessonType,
   formatPrice,
 } from "@/lib/pricing";
+import { faqJsonLd, lowestPriceLabel, pageMetadata, pricingJsonLd } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
 
-export const metadata: Metadata = {
-  title: "Pricing | Chinese Tutor Yang",
-  description:
-    "Transparent, per-lesson pricing for Mandarin Chinese and Chinese Dance lessons with Miss Yang.",
-};
+export const metadata = pageMetadata({
+  title: "Lesson Prices | Online Mandarin & Dance Lessons",
+  description: `Clear per-lesson prices in GBP for online Mandarin and Chinese dance lessons with Miss Yang, from ${lowestPriceLabel()}. Save ${BULK_DISCOUNT_PERCENT}% when you book ${BULK_DISCOUNT_MIN_LESSONS} lessons in one order.`,
+  path: "/pricing",
+});
 
 const languageLessons = LESSON_TYPES.filter((l) => l.id !== "dance" && l.id !== "trial");
 const trialLessons = LESSON_TYPES.filter((l) => l.id === "trial");
@@ -100,6 +101,8 @@ function PricingCard({ lesson, accent, highlighted }: {
 export default function Pricing() {
   return (
     <>
+      <JsonLd data={pricingJsonLd()} />
+      <JsonLd data={faqJsonLd(faqs)} />
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"

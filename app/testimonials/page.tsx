@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/components/seo/JsonLd";
+import { reviewSummaryJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Testimonials | Chinese Tutor Yang",
+export const metadata = pageMetadata({
+  title: "Student Reviews | 5.0 Rating on italki & Preply",
   description:
-    "Read what students and parents say about Chinese Tutor Yang's Mandarin and dance lessons.",
-};
+    "Real student reviews from Miss Yang's italki and Preply profiles: a 5.0 average across 33 reviews, plus a video introduction to her lessons.",
+  path: "/testimonials",
+});
 
 // Real student reviews from Miss Yang's italki and Preply tutor profiles,
 // paraphrased from the originals (not verbatim quotes). Source ratings:
@@ -99,6 +101,7 @@ const programColors: Record<string, { bg: string; text: string }> = {
 export default function Testimonials() {
   return (
     <>
+      <JsonLd data={reviewSummaryJsonLd()} />
       {/* ── Hero ── */}
       <section
         className="relative py-24 px-4 text-center overflow-hidden"

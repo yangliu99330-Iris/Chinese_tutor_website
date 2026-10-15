@@ -3,6 +3,9 @@ import { Playfair_Display, Inter, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import JsonLd from "@/components/seo/JsonLd";
+import { siteJsonLd } from "@/lib/seo";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -26,17 +29,21 @@ const notoSerifSC = Noto_Serif_SC({
 });
 
 export const metadata: Metadata = {
-  title: "Chinese Tutor Yang | Mandarin & Dance Lessons",
+  metadataBase: new URL(SITE_URL),
+  title: "Online Chinese Tutor | Mandarin & Chinese Dance Lessons",
   description:
-    "Learn Mandarin Chinese and Chinese Dance with Miss Yang. Professional, personalized lessons for all ages and levels. Book your first lesson today.",
-  keywords:
-    "Chinese tutor, Mandarin lessons, Chinese dance, language learning, HSK preparation",
+    "Learn Mandarin Chinese or Chinese dance online with Miss Yang — friendly one-to-one lessons for kids, teens and adults, from complete beginner to HSK prep.",
+  alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "Chinese Tutor Yang | Mandarin & Dance Lessons",
+    title: "Online Chinese Tutor | Mandarin & Chinese Dance Lessons",
     description:
-      "Professional Mandarin Chinese and Chinese Dance lessons tailored to your learning goals.",
+      "Friendly one-to-one online Mandarin and Chinese dance lessons with Miss Yang, for all ages and levels.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     type: "website",
+    locale: "en_GB",
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
@@ -47,6 +54,7 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${notoSerifSC.variable} font-inter antialiased`}
       >
+        <JsonLd data={siteJsonLd()} />
         <Navbar />
         <main className="pt-16">{children}</main>
         <Footer />
