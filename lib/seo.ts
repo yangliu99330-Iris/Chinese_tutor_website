@@ -6,9 +6,20 @@ import {
   REVIEW_SUMMARY,
   SITE_NAME,
   SITE_URL,
+  TUTOR_CREDENTIALS,
   TUTOR_NAME,
   WHATSAPP_NUMBER,
 } from "./site";
+
+// A page that sets its own `openGraph` replaces the layout's wholesale, which
+// drops the file-convention image from app/opengraph-image.tsx — so every page
+// must name the image explicitly.
+const SHARE_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: "Chinese Tutor Yang — online Mandarin and Chinese dance lessons",
+};
 
 /** Per-page metadata with a canonical URL and matching Open Graph / Twitter tags. */
 export function pageMetadata(input: { title: string; description: string; path: string }): Metadata {
@@ -24,8 +35,14 @@ export function pageMetadata(input: { title: string; description: string; path: 
       siteName: SITE_NAME,
       type: "website",
       locale: "en_GB",
+      images: [SHARE_IMAGE],
     },
-    twitter: { card: "summary_large_image", title: input.title, description: input.description },
+    twitter: {
+      card: "summary_large_image",
+      title: input.title,
+      description: input.description,
+      images: [SHARE_IMAGE.url],
+    },
   };
 }
 
@@ -36,8 +53,8 @@ const SITE_ID = `${SITE_URL}/#website`;
 const sameAs = [PROFILE_LINKS.italki, PROFILE_LINKS.preply, PROFILE_LINKS.youtube];
 
 /**
- * Site-wide entities. Deliberately limited to facts stated consistently on the
- * site — no credentials/years of experience here until those are confirmed.
+ * Site-wide entities. Credentials come from TUTOR_CREDENTIALS (lib/site.ts) —
+ * never add a qualification here that isn't in that list.
  */
 export function siteJsonLd() {
   return {
@@ -68,6 +85,13 @@ export function siteJsonLd() {
         "@id": PERSON_ID,
         name: TUTOR_NAME,
         jobTitle: "Mandarin Chinese tutor and Chinese dance teacher",
+        description:
+          "Mandarin Chinese teacher and certified Chinese classical dance instructor with 12+ years of teaching experience, based in the UK and teaching online worldwide.",
+        hasCredential: TUTOR_CREDENTIALS.filter((c) => c.kind !== "experience").map((c) => ({
+          "@type": "EducationalOccupationalCredential",
+          name: c.label,
+          credentialCategory: c.kind,
+        })),
         url: `${SITE_URL}/about`,
         image: `${SITE_URL}/tutor-yang.jpg`,
         worksFor: { "@id": ORG_ID },

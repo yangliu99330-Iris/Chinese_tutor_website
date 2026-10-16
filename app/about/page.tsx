@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import JsonLd from "@/components/seo/JsonLd";
 import { aboutJsonLd, pageMetadata } from "@/lib/seo";
+import { TUTOR_CREDENTIALS } from "@/lib/site";
 
 export const metadata = pageMetadata({
   title: "About Miss Yang | Mandarin & Chinese Dance Teacher",
@@ -33,14 +34,7 @@ const pillars = [
   },
 ];
 
-const credentials = [
-  "Bachelor of Arts in Chinese Language & Literature",
-  "Certificate in Mandarin Language Teaching (CTCSOL)",
-  "Certified Chinese Classical Dance Instructor",
-  "HSK 6 (Highest Proficiency Level)",
-  "5+ years of professional Mandarin teaching experience",
-  "Trained at the Beijing Dance Academy",
-];
+const credentials = TUTOR_CREDENTIALS.map((c) => c.label);
 
 export default function About() {
   return (

@@ -1,5 +1,14 @@
 import { LESSON_TYPES, formatPrice, BULK_DISCOUNT_MIN_LESSONS, BULK_DISCOUNT_PERCENT } from "@/lib/pricing";
-import { CONTACT_EMAIL, PROFILE_LINKS, REVIEW_SUMMARY, SITE_NAME, SITE_URL, TUTOR_NAME, WHATSAPP_NUMBER } from "@/lib/site";
+import {
+  CONTACT_EMAIL,
+  PROFILE_LINKS,
+  REVIEW_SUMMARY,
+  SITE_NAME,
+  SITE_URL,
+  TUTOR_CREDENTIALS,
+  TUTOR_NAME,
+  WHATSAPP_NUMBER,
+} from "@/lib/site";
 
 // Plain-text summary for AI assistants and answer engines (llms.txt convention).
 // Prices come from LESSON_TYPES, so this never disagrees with the booking page.
@@ -8,12 +17,15 @@ export function GET() {
     (l) => `- ${l.label}: ${formatPrice(l.priceCents)} for ${l.durationMinutes} minutes. ${l.description}`
   ).join("\n");
 
+  const credentials = TUTOR_CREDENTIALS.map((c) => `- ${c.label}`).join("\n");
+
   const body = `# ${SITE_NAME}
 
 > One-to-one online Mandarin Chinese lessons and Chinese dance lessons with ${TUTOR_NAME}, for children, teenagers and adults. Lessons are taught live online; students book and pay on the website.
 
 ## Who teaches
 - ${TUTOR_NAME} is a Mandarin Chinese teacher and dance teacher based in the UK, teaching students worldwide.
+${credentials}
 - Student reviews: ${REVIEW_SUMMARY.ratingValue} average across ${REVIEW_SUMMARY.reviewCount} reviews on italki and Preply (${PROFILE_LINKS.italki} , ${PROFILE_LINKS.preply}).
 - Video introduction: ${PROFILE_LINKS.youtube}
 
