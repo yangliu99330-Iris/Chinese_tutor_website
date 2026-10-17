@@ -22,12 +22,19 @@ const SHARE_IMAGE = {
 };
 
 /** Per-page metadata with a canonical URL and matching Open Graph / Twitter tags. */
-export function pageMetadata(input: { title: string; description: string; path: string }): Metadata {
+export function pageMetadata(input: {
+  title: string;
+  description: string;
+  path: string;
+  /** True for content still awaiting the owner's fact-check — reachable by direct URL but kept out of search results until approved. */
+  noindex?: boolean;
+}): Metadata {
   const url = `${SITE_URL}${input.path === "/" ? "" : input.path}`;
   return {
     title: input.title,
     description: input.description,
     alternates: { canonical: url },
+    ...(input.noindex ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title: input.title,
       description: input.description,
@@ -148,6 +155,31 @@ export function faqJsonLd(faqs: { q: string; a: string }[]) {
       name: f.q,
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
+  };
+}
+
+/**
+ * Article/guide content (e.g. the HSK and stroke-order guides). `faq`
+ * is optional — include it when the page has a genuine Q&A section, and
+ * it's rendered as its own FAQPage block alongside this one.
+ */
+export function articleJsonLd(input: {
+  headline: string;
+  description: string;
+  path: string;
+  /** ISO date the page's facts were last checked against official sources. */
+  dateModified: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: input.headline,
+    description: input.description,
+    url: `${SITE_URL}${input.path}`,
+    dateModified: input.dateModified,
+    author: { "@id": PERSON_ID },
+    publisher: { "@id": ORG_ID },
+    inLanguage: "en",
   };
 }
 
