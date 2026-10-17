@@ -85,3 +85,48 @@ the human-only checklist below, marking what's still open.
 3. Backlinks: put the website link on the italki, Preply and YouTube profiles; seek mentions from language-learning sites.
 4. Content: owner supplies the expertise; Claude can draft pages (tone guides, HSK levels, FAQs) for her review.
 5. PageSpeed Insights (home + /booking) — send results back to optimise LCP/CLS.
+
+## 8. Content strategy (reference: baulchino.com)
+
+The owner pointed at https://www.baulchino.com as a model for what real Mandarin
+learners look for — it's a free-resources site built by a learner, recommended by
+one of the owner's own students. **Explicitly exclude its "Tools → Channels" page
+(a list of other people's YouTube channels) and its "About" page** when drawing on
+it — everything else is fair reference for *topics*, not for copying content,
+design, or downloadable files.
+
+Translate its resource categories into **informational guide pages** on this site
+(this is a tutoring business, not a file-hosting site — the goal is pages that rank,
+build authority, and funnel to a booking, not a download library):
+
+| baulchino.com category | Guide page(s) to write here |
+|---|---|
+| HSK Books (1-6), New HSK 3.0 Books | "HSK Levels Explained" — what's tested at each level (old 6-level and new 3.0 systems), how to pick a starting level |
+| HSK Audio Files | Fold into the levels guide or a listening-practice page; link to official/legitimate audio sources rather than rehosting files |
+| HSK Mock Test | "How HSK Exams Work" — format, timing, scoring, how to prepare, when to sit which level |
+| Anki Decks HSK 1-4 | "How to Build an HSK Vocabulary Study Routine" — spaced repetition explained, how lesson vocab maps to HSK lists |
+| Hanzi Writing, Calligraphy Templates, Template Generator | "Chinese Character Stroke Order: A Beginner's Guide" — radicals, stroke order rules, how handwriting practice fits into lessons |
+
+Each guide page: real written content (no rehosted files or generators to build),
+one `<h1>`, `pageMetadata()`, a `Course`-style or `FAQPage` JSON-LD block where it
+fits, internal links to `/booking` and the relevant lesson page
+(`/chinese-lessons` or `/chinese-dance-lessons`), and a byline referencing
+`TUTOR_CREDENTIALS` for E-E-A-T. Owner reviews technical/factual accuracy
+(HSK levels and exam details) before publishing — Claude drafts, does not
+publish facts unchecked.
+
+Add new pages to `PUBLIC_PATHS` in `lib/site.ts` and to the sitemap/audit flow in
+section 4 above.
+
+## 9. Monthly automation — not yet enabled
+
+The owner approved running this skill monthly, **but only once the content
+pipeline above has real pages to show for it** — right now the skill is a
+technical audit with no content-production tracking, which the owner judged
+insufficient. Before turning on a recurring run:
+1. Build a simple tracking list of guide pages (status: planned / drafted /
+   owner-reviewed / published) — keep it in this skill directory or as a
+   project memory, and extend this skill to read and update it.
+2. Then schedule a monthly run that does: the technical audit (section 1) +
+   reports content-pipeline status + suggests the next 1-2 pages to draft.
+Until then, run the audit manually after any relevant change (section 4).
