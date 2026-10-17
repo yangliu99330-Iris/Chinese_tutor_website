@@ -27,6 +27,15 @@ const navItems: NavItem[] = [
     ],
   },
   { href: "/guides", label: "Guides" },
+  {
+    label: "Digital Resources",
+    children: [
+      { href: "/guides/hsk-levels", label: "HSK" },
+      { href: "/guides/hsk-levels#new-system", label: "New HSK 3.0" },
+      { href: "/resources/hanzi-stroke-order", label: "Hanzi & Stroke Order" },
+      { href: "/resources/hsk-vocabulary", label: "HSK Vocabulary" },
+    ],
+  },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About Me", children: [{ href: "/contact", label: "Contact" }] },
   // Business Cards isn't launched yet — left out of the nav until it's ready.

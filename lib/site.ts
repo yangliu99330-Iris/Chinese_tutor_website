@@ -42,6 +42,24 @@ export const GUIDES = [
   },
 ] as const;
 
+/**
+ * Published interactive/reference tools under the "Digital Resources" nav
+ * menu — distinct from GUIDES (long-form prose) in being tool- or
+ * data-driven. Both /resources and the sitemap read this list.
+ */
+export const RESOURCES = [
+  {
+    path: "/resources/hanzi-stroke-order",
+    title: "Stroke Order Tool",
+    description: "Type any Chinese character and see its correct stroke order animated step by step.",
+  },
+  {
+    path: "/resources/hsk-vocabulary",
+    title: "HSK Vocabulary",
+    description: "The complete HSK 1 word list — searchable, with pinyin and English meaning.",
+  },
+] as const;
+
 const FIXED_PUBLIC_PATHS = [
   "/",
   "/chinese-lessons",
@@ -52,7 +70,12 @@ const FIXED_PUBLIC_PATHS = [
   "/testimonials",
   "/contact",
   "/guides",
+  "/resources",
 ] as const;
 
 /** Public pages that belong in the sitemap. */
-export const PUBLIC_PATHS = [...FIXED_PUBLIC_PATHS, ...GUIDES.map((g) => g.path)];
+export const PUBLIC_PATHS = [
+  ...FIXED_PUBLIC_PATHS,
+  ...GUIDES.map((g) => g.path),
+  ...RESOURCES.map((r) => r.path),
+];
