@@ -18,7 +18,6 @@ interface NavItem extends Partial<NavLink> {
 
 const navItems: NavItem[] = [
   { href: "/", label: "Home" },
-  { href: "/about", label: "About Me", children: [{ href: "/contact", label: "Contact" }] },
   {
     label: "Learn With Us",
     children: [
@@ -28,8 +27,11 @@ const navItems: NavItem[] = [
     ],
   },
   { href: "/guides", label: "Guides" },
-  { href: "/business-cards", label: "Business Cards" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About Me", children: [{ href: "/contact", label: "Contact" }] },
+  // Business Cards isn't launched yet — left out of the nav until it's ready.
+  // The route and feature code are untouched; re-add here to show it again:
+  // { href: "/business-cards", label: "Business Cards" },
 ];
 
 function ChevronIcon({ open }: { open: boolean }) {
