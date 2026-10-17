@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Me" },
   { href: "/chinese-lessons", label: "Chinese Lessons" },
+  { href: "/guides", label: "Guides" },
   { href: "/chinese-dance-lessons", label: "Dance Lessons" },
   { href: "/testimonials", label: "Testimonials" },
   { href: "/pricing", label: "Pricing" },

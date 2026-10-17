@@ -28,8 +28,21 @@ export const TUTOR_CREDENTIALS: { label: string; kind: "degree" | "certification
 // Source ratings, as stated on /testimonials (italki 5.0★ × 21, Preply 5.0★ × 12).
 export const REVIEW_SUMMARY = { ratingValue: "5.0", reviewCount: 33 } as const;
 
-/** Public pages that belong in the sitemap. */
-export const PUBLIC_PATHS = [
+/**
+ * Published learning guides (content-pipeline.md tracks what's planned vs.
+ * drafted vs. published). Both the /guides index page and the sitemap read
+ * this list, so a guide only has to be added in one place.
+ */
+export const GUIDES = [
+  {
+    path: "/guides/hsk-levels",
+    title: "HSK Levels Explained",
+    description:
+      "A plain-English guide to the HSK Chinese proficiency levels and how to pick the right starting level.",
+  },
+] as const;
+
+const FIXED_PUBLIC_PATHS = [
   "/",
   "/chinese-lessons",
   "/chinese-dance-lessons",
@@ -38,4 +51,8 @@ export const PUBLIC_PATHS = [
   "/about",
   "/testimonials",
   "/contact",
+  "/guides",
 ] as const;
+
+/** Public pages that belong in the sitemap. */
+export const PUBLIC_PATHS = [...FIXED_PUBLIC_PATHS, ...GUIDES.map((g) => g.path)];

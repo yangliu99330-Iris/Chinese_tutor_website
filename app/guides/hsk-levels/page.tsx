@@ -2,16 +2,12 @@ import Link from "next/link";
 import JsonLd from "@/components/seo/JsonLd";
 import { articleJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 
-// DRAFT — noindex until the owner has checked the HSK figures below against
-// current official sources (see the content-pipeline tracker). Once
-// confirmed: flip noindex to false here, add "/guides/hsk-levels" to
-// PUBLIC_PATHS in lib/site.ts, and link to it from /chinese-lessons.
+// Published — owner has confirmed the HSK figures below (2026-10-18).
 export const metadata = pageMetadata({
   title: "HSK Levels Explained: Which One Should You Start At?",
   description:
     "A plain-English guide to the HSK Chinese proficiency levels — the classic HSK 1-6 scale and the newer three-band system — and how to pick the right starting level.",
   path: "/guides/hsk-levels",
-  noindex: true,
 });
 
 const classicLevels = [

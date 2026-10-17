@@ -137,6 +137,13 @@ export default function ChineseLessons() {
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-gray-900">
               Choose Your Course
             </h2>
+            <p className="text-gray-400 text-sm mt-3">
+              Not sure which HSK level you need?{" "}
+              <Link href="/guides/hsk-levels" className="underline" style={{ color: "#B668BD" }}>
+                Read the HSK levels guide
+              </Link>
+              .
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -11,7 +11,7 @@ from at least one relevant existing page.
 
 | Page | Path | Status | Notes |
 |---|---|---|---|
-| HSK Levels Explained | `/guides/hsk-levels` | **drafted** | Live at this URL but `noindex: true`. Owner to verify: classic HSK 1-6 word counts, and the current rollout/coexistence status of the newer three-band (3.0) system — both are presented cautiously/hedged in the draft pending that check. |
+| HSK Levels Explained | `/guides/hsk-levels` | **published** | Owner confirmed the figures 2026-10-18. Indexed, in `PUBLIC_PATHS`, linked from `/guides`, the Navbar ("Guides"), and `/chinese-lessons`. |
 | How HSK Exams Work | `/guides/hsk-exam-format` | planned | Format, timing, scoring, how to prepare, when to sit which level. |
 | HSK Vocabulary Study Routine | `/guides/hsk-vocabulary-study` | planned | Spaced repetition explained; how lesson vocab maps to HSK lists. Links from the levels guide once that's published. |
 | Chinese Character Stroke Order Guide | `/guides/chinese-stroke-order` | planned | Radicals, stroke order rules, how handwriting fits into lessons. |
