@@ -2,7 +2,11 @@ import Link from "next/link";
 import JsonLd from "@/components/seo/JsonLd";
 import { articleJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 
-// Published — owner has confirmed the HSK figures below (2026-10-18).
+// Published — classic HSK 1-6 figures confirmed by the owner (2026-10-18).
+// New HSK 3.0 section updated 2026-10-20 with the finalised official 2025
+// syllabus (sourced from Wikipedia, which cites the official announcement) —
+// this replaced an earlier, deliberately vague draft written before the
+// syllabus was finalised.
 export const metadata = pageMetadata({
   title: "HSK Levels Explained: Which One Should You Start At?",
   description:
@@ -19,22 +23,14 @@ const classicLevels = [
   { level: "HSK 6", words: "~5,000+", summary: "Near-native comprehension; reads and writes with ease." },
 ];
 
-const newBands = [
-  {
-    band: "Elementary (初等)",
-    levels: "Levels 1–3",
-    summary: "Roughly comparable to classic HSK 1–3 — everyday phrases and simple daily interactions.",
-  },
-  {
-    band: "Intermediate (中等)",
-    levels: "Levels 4–6",
-    summary: "Roughly comparable to classic HSK 4–5 — fluent conversation, opinions, workplace topics.",
-  },
-  {
-    band: "Advanced (高等)",
-    levels: "Levels 7–9",
-    summary: "Tested as a combined band — academic, professional and near-native command of Chinese.",
-  },
+const newLevels = [
+  { level: "Level 1", band: "Beginner", words: "300", cumulative: "300" },
+  { level: "Level 2", band: "Beginner", words: "200", cumulative: "500" },
+  { level: "Level 3", band: "Beginner", words: "500", cumulative: "1,000" },
+  { level: "Level 4", band: "Intermediate", words: "1,000", cumulative: "2,000" },
+  { level: "Level 5", band: "Intermediate", words: "1,600", cumulative: "3,600" },
+  { level: "Level 6", band: "Intermediate", words: "1,800", cumulative: "5,400" },
+  { level: "Levels 7–9", band: "Advanced", words: "5,600", cumulative: "11,000" },
 ];
 
 const faqs = [
@@ -48,7 +44,7 @@ const faqs = [
   },
   {
     q: "Is the old HSK 1-6 test still valid?",
-    a: "Rules vary by country and test centre, and have been changing as the newer three-band standard rolls out. Check directly with the test centre or institution that needs your result before registering, since requirements can differ by region and by what the result is for (university, visa, employer).",
+    a: "Yes, for now. The new HSK 3.0 syllabus was finalised in late 2025 and a global trial exam ran in early 2026, but as of mid-2026 the full rollout of the new Levels 1–6 exams is still in progress, and the classic HSK 1-6 test continues to run. Check directly with the test centre or institution that needs your result before registering, since which version they'll accept can differ by region and by what the result is for (university, visa, employer).",
   },
   {
     q: "How long does it take to reach each level?",
@@ -65,7 +61,7 @@ export default function HskLevelsGuide() {
           description:
             "A plain-English guide to the HSK Chinese proficiency levels and how to pick the right starting level.",
           path: "/guides/hsk-levels",
-          dateModified: "2026-10-17",
+          dateModified: "2026-10-20",
         })}
       />
       <JsonLd data={faqJsonLd(faqs)} />
@@ -146,27 +142,44 @@ export default function HskLevelsGuide() {
         </div>
       </section>
 
-      {/* ── New three-band system ── */}
-      <section className="section-padding bg-white">
+      {/* ── New HSK 3.0 ── */}
+      <section id="new-system" className="section-padding bg-white scroll-mt-20">
         <div className="max-w-4xl mx-auto">
-          <h2 className="font-playfair text-3xl font-bold text-gray-900 mb-3">The Newer Three-Band System</h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">
+          <h2 className="font-playfair text-3xl font-bold text-gray-900 mb-3">New HSK 3.0: The Revised System</h2>
+          <p className="text-gray-500 mb-4 leading-relaxed">
             A revised standard restructures proficiency into three bands and nine levels, with the top three levels
-            (7–9) tested together as one advanced band rather than as separate exams. Rollout and which version a
-            given institution asks for varies by country and test centre — always confirm with whoever needs your
-            result before you register for either version.
+            (7–9) tested together as one advanced band rather than as separate exams. The official syllabus was
+            finalised and published in November 2025, and a global trial exam ran in January 2026 — but as of
+            mid-2026, the full rollout of the new Levels 1–6 exams is still in progress. Both systems may be in use
+            depending on your country and test centre, so always confirm with whoever needs your result (university,
+            employer, visa office) which version they want before you register.
           </p>
-          <div className="grid sm:grid-cols-3 gap-5">
-            {newBands.map((b) => (
-              <div key={b.band} className="rounded-xl p-5 border" style={{ borderColor: "#F8ECE1", backgroundColor: "#FCFCFC" }}>
-                <p className="font-semibold text-gray-900 mb-1">{b.band}</p>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#CD8136" }}>
-                  {b.levels}
-                </p>
-                <p className="text-gray-500 text-sm leading-relaxed">{b.summary}</p>
-              </div>
-            ))}
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b" style={{ borderColor: "#F8ECE1" }}>
+                  <th className="py-3 pr-4 text-sm font-semibold text-gray-900">Level</th>
+                  <th className="py-3 pr-4 text-sm font-semibold text-gray-900">Band</th>
+                  <th className="py-3 text-sm font-semibold text-gray-900">Vocabulary (cumulative)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {newLevels.map((l) => (
+                  <tr key={l.level} className="border-b" style={{ borderColor: "#F8ECE1" }}>
+                    <td className="py-3 pr-4 font-semibold" style={{ color: "#B668BD" }}>
+                      {l.level}
+                    </td>
+                    <td className="py-3 pr-4 text-gray-500 text-sm">{l.band}</td>
+                    <td className="py-3 text-gray-600 text-sm">{l.cumulative} words</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+          <p className="text-xs text-gray-400">
+            Figures from the official 2025 HSK 3.0 syllabus (finalised 15 November 2025, effective 18 November
+            2025). Beginner = Levels 1–3, Intermediate = Levels 4–6, Advanced = Levels 7–9 (one combined exam).
+          </p>
         </div>
       </section>
 
