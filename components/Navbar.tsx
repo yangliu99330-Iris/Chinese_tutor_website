@@ -27,13 +27,18 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    label: "Learning Tools",
+    children: [
+      { href: "/resources/pinyin-annotator", label: "Pinyin Annotator" },
+      { href: "/resources/hanzi-stroke-order", label: "Hanzi & Stroke Order" },
+    ],
+  },
+  {
     label: "Digital Resources",
     children: [
       { href: "/guides", label: "Guides" },
       { href: "/guides/hsk-levels", label: "HSK" },
       { href: "/guides/hsk-levels#new-system", label: "New HSK 3.0" },
-      { href: "/resources/pinyin-annotator", label: "Pinyin Annotator" },
-      { href: "/resources/hanzi-stroke-order", label: "Hanzi & Stroke Order" },
       { href: "/resources/hsk-vocabulary", label: "HSK Vocabulary" },
     ],
   },
