@@ -49,6 +49,11 @@ export const GUIDES = [
  */
 export const RESOURCES = [
   {
+    path: "/resources/pinyin-annotator",
+    title: "Pinyin Annotator",
+    description: "Paste Chinese text and get accurate, context-aware pinyin above every character.",
+  },
+  {
     path: "/resources/hanzi-stroke-order",
     title: "Stroke Order Tool",
     description: "Type any Chinese character and see its correct stroke order animated step by step.",

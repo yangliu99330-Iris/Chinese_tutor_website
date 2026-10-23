@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
+import PinyinAnnotator from "@/components/resources/PinyinAnnotator";
 
 const stats = [
   { value: "200+", label: "Students Taught" },
@@ -252,6 +253,32 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Free Tool ── */}
+      <section className="section-padding bg-white">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#B668BD" }}>
+              Try It Now — Free
+            </p>
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Instant Pinyin, Done Right
+            </h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Paste any Chinese text below and get accurate pinyin above every character — including correct
+              handling of multi-pronunciation characters (多音字).
+            </p>
+          </div>
+
+          <PinyinAnnotator compact />
+
+          <p className="text-center mt-6">
+            <Link href="/resources" className="text-sm font-semibold underline" style={{ color: "#B668BD" }}>
+              Explore more free digital resources →
+            </Link>
+          </p>
         </div>
       </section>
 

@@ -13,6 +13,7 @@
     "hanzi-writer": "^3.7.3",
     "luxon": "^3.7.2",
     "next": "^15.5.20",
+    "pinyin-pro": "^3.29.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^6.18.0",
