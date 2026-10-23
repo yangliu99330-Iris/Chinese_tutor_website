@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const DEFAULT_TEXT = "他在银行工作，走路去银行很远，他很行。";
+const DEFAULT_TEXT = "我喜欢听音乐，它让我感到快乐。";
 
-const EXAMPLES = ["他在银行工作，走路去银行很远，他很行。", "睡着了还没睡着，你也要睡觉了。", "你好，欢迎学习中文！"];
+const EXAMPLES = ["我喜欢听音乐，它让我感到快乐。", "睡着了还没睡着，你也要睡觉了。", "你好，欢迎学习中文！"];
 
 const DEBOUNCE_MS = 300;
 
