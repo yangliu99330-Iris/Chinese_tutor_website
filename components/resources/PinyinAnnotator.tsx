@@ -32,6 +32,8 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceURI, setVoiceURI] = useState("");
   const pinyinFn = useRef<PinyinFn | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -50,13 +52,37 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
   }, []);
 
   // Speech synthesis is a browser API with no install/setup — detect support,
+  // load whichever Chinese voices the visitor's own device offers (the list
+  // loads asynchronously in some browsers, hence the voiceschanged listener),
   // and stop any speech in progress if the user navigates away mid-sentence.
   useEffect(() => {
-    setSpeechSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+    const supported = typeof window !== "undefined" && "speechSynthesis" in window;
+    setSpeechSupported(supported);
+    if (!supported) return;
+
+    // Common names for the female-voiced option across platforms — tried in
+    // order, falling back to whatever Chinese voice is listed first.
+    const femaleVoiceNames = ["Tingting", "Meijia", "Sinji", "Shelley", "Sandy", "Huihui", "Yaoyao", "Ting-Ting"];
+
+    function loadVoices() {
+      const zhVoices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("zh"));
+      setVoices(zhVoices);
+      setVoiceURI((prev) => {
+        if (prev && zhVoices.some((v) => v.voiceURI === prev)) return prev;
+        let preferred: SpeechSynthesisVoice | undefined;
+        for (const name of femaleVoiceNames) {
+          preferred = zhVoices.find((v) => v.name.includes(name));
+          if (preferred) break;
+        }
+        return (preferred ?? zhVoices[0])?.voiceURI ?? "";
+      });
+    }
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+      window.speechSynthesis.cancel();
     };
   }, []);
 
@@ -96,6 +122,8 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "zh-CN";
     utterance.rate = 0.9;
+    const voice = voices.find((v) => v.voiceURI === voiceURI);
+    if (voice) utterance.voice = voice;
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => setSpeaking(false);
@@ -265,6 +293,21 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
               >
                 {speaking ? "⏸ Stop" : "🔊 Listen"}
               </button>
+            )}
+            {voices.length > 1 && (
+              <select
+                value={voiceURI}
+                onChange={(e) => setVoiceURI(e.target.value)}
+                className="px-2 py-2 rounded-lg text-sm border-2 bg-white"
+                style={{ borderColor: "#C65C5C", color: "#C65C5C" }}
+                aria-label="Choose a voice"
+              >
+                {voices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
             )}
             <button
               type="button"
