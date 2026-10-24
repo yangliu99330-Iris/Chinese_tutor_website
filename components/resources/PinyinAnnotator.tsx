@@ -30,6 +30,8 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const pinyinFn = useRef<PinyinFn | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -44,6 +46,17 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
     });
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  // Speech synthesis is a browser API with no install/setup — detect support,
+  // and stop any speech in progress if the user navigates away mid-sentence.
+  useEffect(() => {
+    setSpeechSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
 
@@ -76,6 +89,28 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, ready]);
+
+  function speak(text: string) {
+    if (!speechSupported) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.9;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function handleListen() {
+    if (!speechSupported) return;
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    speak(input);
+  }
 
   async function handleCopy() {
     if (!pinyinArr || chars.length === 0) return;
@@ -199,7 +234,14 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
           >
             {chars.map((ch, i) =>
               isHanzi(ch) ? (
-                <ruby key={i} className="mx-0.5">
+                <ruby
+                  key={i}
+                  className={`mx-0.5 rounded transition-colors ${
+                    speechSupported ? "cursor-pointer hover:bg-purple-50" : ""
+                  }`}
+                  onClick={() => speak(ch)}
+                  title={speechSupported ? `Play "${ch}"` : undefined}
+                >
                   {ch}
                   <rt className="text-xs" style={{ color: "#B668BD" }}>
                     {pinyinArr[i]}
@@ -214,6 +256,16 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
           </div>
 
           <div className="flex items-center gap-2 mt-3">
+            {speechSupported && (
+              <button
+                type="button"
+                onClick={handleListen}
+                className="px-4 py-2 rounded-lg font-semibold text-sm border-2 transition-colors hover:bg-gray-50"
+                style={{ borderColor: "#C65C5C", color: "#C65C5C" }}
+              >
+                {speaking ? "⏸ Stop" : "🔊 Listen"}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleCopy}
