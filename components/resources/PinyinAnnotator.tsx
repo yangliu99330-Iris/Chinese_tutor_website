@@ -60,9 +60,12 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
     setSpeechSupported(supported);
     if (!supported) return;
 
-    // Common names for the female-voiced option across platforms — tried in
-    // order, falling back to whatever Chinese voice is listed first.
-    const femaleVoiceNames = ["Tingting", "Meijia", "Sinji", "Shelley", "Sandy", "Huihui", "Yaoyao", "Ting-Ting"];
+    // "Tingting" is the standard Mandarin female voice on Apple devices
+    // (macOS/iOS/iPadOS) — preferred whenever it's present. It doesn't exist
+    // on Windows or Android, so on those devices this quietly falls back to
+    // another Chinese voice (if the device has one) rather than staying
+    // silent; there's no voice picker shown, this choice just happens once.
+    const preferredVoiceNames = ["Tingting"];
 
     function loadVoices() {
       const zhVoices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("zh"));
@@ -70,7 +73,7 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
       setVoiceURI((prev) => {
         if (prev && zhVoices.some((v) => v.voiceURI === prev)) return prev;
         let preferred: SpeechSynthesisVoice | undefined;
-        for (const name of femaleVoiceNames) {
+        for (const name of preferredVoiceNames) {
           preferred = zhVoices.find((v) => v.name.includes(name));
           if (preferred) break;
         }
@@ -293,21 +296,6 @@ export default function PinyinAnnotator({ compact = false }: { compact?: boolean
               >
                 {speaking ? "⏸ Stop" : "🔊 Listen"}
               </button>
-            )}
-            {voices.length > 1 && (
-              <select
-                value={voiceURI}
-                onChange={(e) => setVoiceURI(e.target.value)}
-                className="px-2 py-2 rounded-lg text-sm border-2 bg-white"
-                style={{ borderColor: "#C65C5C", color: "#C65C5C" }}
-                aria-label="Choose a voice"
-              >
-                {voices.map((v) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
             )}
             <button
               type="button"
